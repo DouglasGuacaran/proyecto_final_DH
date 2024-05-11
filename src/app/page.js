@@ -1,10 +1,15 @@
-'use client'
-import { useState } from "react";
+import Hero from "@/components/hero/Hero";
+import Navbar from "@/components/navbar/Navbar";
+
 
 export default function Home() {
 
-  const [cancha, setCancha] = useState('')
   return (
-    <h1>Hola mundo</h1>
+    <>
+    <main>
+      <Navbar />
+      <Hero />
+    </main>
+    </>
   );
 }
