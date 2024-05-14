@@ -1,5 +1,5 @@
 'use client';
-// import React from 'react';
+
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Card from '../card/Card';
@@ -49,7 +49,7 @@ const Gallery = () => {
     }, []);
 
     return (
-        <div className="container mx-auto flex">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto gap-10 my-20 px-10">
             {canchas.map((cancha) => (
                 <Card key={cancha.id} dataCancha={cancha} />
             ))}
@@ -58,12 +58,3 @@ const Gallery = () => {
 };
 
 export default Gallery;
-
-// <div className="container mx-auto">
-//     <img src={dataCancha.Imagen_cancha[1].Url_img} alt={dataCancha.Nombre} className="card-image" />
-//     <div className="card-body">
-//         <h5 className="card-title">Nombre: {dataCancha.Nombre}</h5>
-//         <p className="card-text">Dirección: {dataCancha.Direccion}</p>
-//         <p className="card-price">Valor de la hora: ${dataCancha.Precio_hora}</p>
-//     </div>
-// </div>
