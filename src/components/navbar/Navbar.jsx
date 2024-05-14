@@ -7,7 +7,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const openMenu = () => setIsOpen(!isOpen)
   return (
-    <nav className="bg-white border-gray-200">
+    <nav className="fixed top-0 w-full bg-white border-gray-200 z-10">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link
           href="/"
@@ -75,3 +75,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
