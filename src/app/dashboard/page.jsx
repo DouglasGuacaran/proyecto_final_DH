@@ -1,49 +1,19 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState } from 'react';
+
 import Footer from '@/components/footer/Footer';
 import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/Button'; // Asumiendo que tienes un componente Button
+import { useCanchas } from '@/context/CanchasProvider';
+import { createClient } from '@/utils/supabase/client';
 
 // Inicializar cliente de Supabase
-const supabaseUrl = 'https://sazbeqvdotgnznhvwglg.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhemJlcXZkb3RnbnpuaHZ3Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU1NDYyNzYsImV4cCI6MjAzMTEyMjI3Nn0.fXqkFe1zssvfW77AvbwKzChXWEW5demodEPnq6vP_j8';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient()
 
 export default function Page() {
-  const [canchas, setCanchas] = useState([]);
+  const {canchas, fetchCanchas} = useCanchas()
   const [newCancha, setNewCancha] = useState({ nombre: '', descripcion: '' });
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchCanchas();
-  }, []);
-
-  // Cargar las canchas existentes
-  const fetchCanchas = async () => {
-    const { data, error } = await supabase.from('Cancha').select(`
-      Nombre,
-      Direccion,
-      Precio_hora,
-      Superficie,
-      Tamanio,
-      Disciplina_id,
-      Imagen_cancha (
-        Url_img
-      ),
-      Disciplina (
-        Nombre
-      )
-    `);
-    if (error) {
-      console.error('Error fetching data:', error);
-      setError('Error al cargar las canchas');
-    } else {
-      console.log(data);
-      setCanchas(data);
-    }
-  };
 
   // Manejar el cambio en los inputs del formulario
   const handleInputChange = (e) => {
