@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
+import Link from 'next/link';
 
 const Card = ({ dataCancha }) => {
-  const { Nombre, Direccion, Precio_hora, imagen, Superficie, Tamanio } =
+  const { id, Nombre, Direccion, Precio_hora, imagen, Superficie, Tamanio } =
     dataCancha;
 
-  const [modalOpen, setModalOpen] = useState(false);
+  // const [modalOpen, setModalOpen] = useState(false);
 
-  const openModal = () => {
-    setModalOpen(true);
-  };
+  // const openModal = () => {
+  //   setModalOpen(true);
+  // };
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
+  // const closeModal = () => {
+  //   setModalOpen(false);
+  // };
 
   return (
     <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow flex flex-col justify-between">
@@ -30,13 +31,15 @@ const Card = ({ dataCancha }) => {
           </span>
         </div>
         <div className="flex justify-evenly mt-4">
-          <Button onClick={openModal} variant="outline">
+          <Link href={`/${id}`}>
+          <Button variant="outline">
             Detalle
           </Button>
+          </Link>
           <Button>Reservar</Button>
         </div>
       </div>
-      {modalOpen && (
+      {/* {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="bg-white p-8 rounded-lg shadow-xl z-50 relative flex flex-col items-center">
@@ -77,7 +80,7 @@ const Card = ({ dataCancha }) => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

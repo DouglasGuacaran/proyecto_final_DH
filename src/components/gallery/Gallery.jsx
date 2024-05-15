@@ -8,7 +8,6 @@ const supabaseUrl = 'https://sazbeqvdotgnznhvwglg.supabase.co/rest/v1/Cancha?sel
 const supabaseUrl1 = 'https://sazbeqvdotgnznhvwglg.supabase.co/rest/v1/Imagen_cancha?select=*?Id=eq.1';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhemJlcXZkb3RnbnpuaHZ3Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU1NDYyNzYsImV4cCI6MjAzMTEyMjI3Nn0.fXqkFe1zssvfW77AvbwKzChXWEW5demodEPnq6vP_j8';
 const supabase = createClient(supabaseUrl, supabaseKey);
-console.log(supabase);
 
 const Gallery = () => {
     const [canchas, setCanchas] = useState([]);

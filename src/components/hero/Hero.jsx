@@ -4,7 +4,7 @@ import Search from '../search/Search';
 
 export default function Hero() {
   return (
-    <section className='w-full flex flex-col justify-center items-center mt-10' style={{ backgroundColor: '#F4F4F4' }}>
+    <section className='w-full flex flex-col justify-center items-center mt-10 bg-[#F4F4F4] pt-20 pb-10'>
       <div className='flex  justify-evenly w-full max-w-screen-xl'>
         <div className=' flex flex-col gap-8 justify-center'>
           <h1 className='text-5xl font-medium'>Juega con el corazón</h1>
