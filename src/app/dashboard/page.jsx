@@ -5,18 +5,42 @@ import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/Button'; // Asumiendo que tienes un componente Button
 import { useCanchas } from '@/context/CanchasProvider';
 import { createClient } from '@/utils/supabase/client';
+import { Input } from '@/components/ui/input';
 
 // Inicializar cliente de Supabase
-const supabase = createClient()
+const supabase = createClient();
 
 export default function page() {
-  const {canchas, fetchCanchas} = useCanchas()
-  const [newCancha, setNewCancha] = useState({ nombre: '', descripcion: '' });
+  const [file, setFile] = useState(null);
+  const { canchas, fetchCanchas } = useCanchas();
+  const [newCancha, setNewCancha] = useState({
+    Nombre: '',
+    Direccion: '',
+    Superficie: '',
+    Tamanio: '',
+    Precio_hora: '',
+    Disciplina_id: '',
+  });
   const [error, setError] = useState('');
+  const [fileName, setFileName] = useState('Agregar imagen');
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFile(file);
+      setFileName(file.name);
+    } else {
+      setFileName('Agrega imagen');
+    }
+  };
 
   // Manejar el cambio en los inputs del formulario
   const handleInputChange = (e) => {
-    setNewCancha({ ...newCancha, [e.target.name]: e.target.value });
+    const { name, value } = e.target; // Accede a `name` y `value` de `e.target`
+    setNewCancha((prevState) => ({
+      ...prevState,
+      [name]: value, // Usa el valor de `name` para actualizar la propiedad correspondiente
+    }));
   };
 
   // Función para agregar una nueva cancha
@@ -28,31 +52,82 @@ export default function page() {
       .eq('Nombre', newCancha.Nombre)
       .single();
 
-    if (existingCancha) {
-      setError('El nombre de la cancha ya está en uso.');
+    if (existingError || !existingCancha) {
+      console.error('Error al verificar el nombre existente:', existingError);
+      setError('Error al verificar el nombre existente.');
       return;
     }
 
-    const { data, insertError } = await supabase
-      .from('Cancha')
-      .insert([newCancha]);
-
-    if (insertError) {
-      console.error('Error inserting new cancha:', insertError);
-      setError('Error al agregar la cancha.');
-    } else {
-      fetchCanchas();
-      setNewCancha({
-        Nombre: '',
-        Direccion: '',
-        Superficie: '',
-        Tamanio: '',
-        Precio_hora: '',
-        Disciplina_id: '',
-      });
-      setError('');
-      setModalOpen(false);
+    if (existingCancha.length > 0) {
+      setError('Una cancha con este nombre ya existe.');
+      console.log('Una cancha con este nombre ya existe.');
+      return;
     }
+
+    let uploadUrl = null;
+
+    // Subir archivo si existe
+    if (file) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('imagenes_canchas')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        setError('Error al subir la imagen.');
+        return;
+      }
+      uploadUrl = `${
+        supabase.storage.from('imagenes_canchas').getPublicUrl(fileName)
+          .publicURL
+      }`;
+    }
+
+    // Intentar insertar nueva cancha
+    const { data: newCanchaData, error: insertError } = await supabase
+      .from('Cancha')
+      .insert([{ ...newCancha, Url_imagen: uploadUrl || '' }]);
+
+    if (insertError || !newCanchaData) {
+      console.error('Error inserting data:', insertError);
+      setError('Error al insertar la cancha.');
+      return;
+    }
+
+    console.log('Cancha agregada correctamente:', newCanchaData);
+
+    if (uploadUrl && newCanchaData.length > 0) {
+      const { data: imageData, error: imageError } = await supabase
+        .from('Imagen_cancha')
+        .insert([
+          {
+            cancha_id: newCanchaData[0].id, // Usar con cuidado
+            url_img: uploadUrl,
+          },
+        ]);
+
+      if (imageError) {
+        console.error('Error inserting image data:', imageError);
+        setError('Error al insertar datos de imagen.');
+      } else {
+        console.log('Imagen asociada correctamente a la cancha:', imageData);
+      }
+    }
+
+    setNewCancha({
+      Nombre: '',
+      Direccion: '',
+      Superficie: '',
+      Tamanio: '',
+      Precio_hora: '',
+      Disciplina_id: '',
+    });
+    fetchCanchas();
+    setError('');
+    setFile(null);
+    setFileName('Agrega imagen');
   };
 
   // Función para eliminar una cancha
@@ -89,7 +164,7 @@ export default function page() {
           />
         </svg>
 
-        <h2>
+        <h2 className="text-center">
           El panel de administrador esta disponible únicamente en versión
           desktop
         </h2>
@@ -136,7 +211,7 @@ export default function page() {
                     {cancha.Imagen_cancha.length > 0 && (
                       <img
                         src={cancha.Imagen_cancha[0].Url_img}
-                        alt="Cancha"
+                        alt="Imagen de la Cancha"
                         className="w-20 h-20 object-cover rounded-md"
                       />
                     )}
@@ -227,7 +302,12 @@ export default function page() {
             >
               Disciplina:
             </label>
-            <select className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <select
+              name="Disciplina_id"
+              value={newCancha.Disciplina_id}
+              onChange={handleInputChange}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
               <option value="" selected>
                 Seleccione una disciplina
               </option>
@@ -236,6 +316,23 @@ export default function page() {
               <option value="3">Paddel</option>
             </select>
           </div>
+
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="file_inp"
+            >
+              Agregar Imagen:
+            </label>
+            <Input
+              id="file_inp"
+              name="file_inp"
+              type="file"
+              onChange={handleFileChange}
+              required
+            />
+          </div>
+
           <Button
             type="submit"
             className="flex justify-center align-items-center mt-4"
