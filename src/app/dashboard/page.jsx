@@ -1,6 +1,5 @@
 'use client';
 import React, { useState } from 'react';
-
 import Footer from '@/components/footer/Footer';
 import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/Button'; // Asumiendo que tienes un componente Button
@@ -10,7 +9,7 @@ import { createClient } from '@/utils/supabase/client';
 // Inicializar cliente de Supabase
 const supabase = createClient()
 
-export default function Page() {
+export default function page() {
   const {canchas, fetchCanchas} = useCanchas()
   const [newCancha, setNewCancha] = useState({ nombre: '', descripcion: '' });
   const [error, setError] = useState('');

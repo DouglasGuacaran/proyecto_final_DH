@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Card from '../card/Card';
 import { Toggle } from '../ui/toggle';
 import { useCanchas } from '@/context/CanchasProvider';

@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function Page() {
+export default function page() {
   const { id } = useParams();
   const [cancha, setCancha] = useState({});
 
@@ -38,7 +38,6 @@ export default function Page() {
       if (error) {
         console.error('Error fetching cancha:', error);
       } else {
-        // console.log(data)
         const dataCancha = { ...data, imagen: data.Imagen_cancha[0].Url_img };
 
         setCancha(dataCancha);
