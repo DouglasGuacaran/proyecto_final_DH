@@ -1,8 +1,9 @@
 'use client';
-import React, { useState } from 'react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { useEffect, useState } from 'react';
 import Footer from '@/components/footer/Footer';
 import Navbar from '@/components/navbar/Navbar';
-import { Button } from '@/components/ui/Button'; // Asumiendo que tienes un componente Button
+import { Button } from '@/components/ui/button';
 import { useCanchas } from '@/context/CanchasProvider';
 import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -13,16 +14,12 @@ const supabase = createClient();
 export default function page() {
   const [file, setFile] = useState(null);
   const { canchas, fetchCanchas } = useCanchas();
-  const [newCancha, setNewCancha] = useState({
-    Nombre: '',
-    Direccion: '',
-    Superficie: '',
-    Tamanio: '',
-    Precio_hora: '',
-    Disciplina_id: '',
-  });
-  const [error, setError] = useState('');
-  const [fileName, setFileName] = useState('Agregar imagen');
+  const [newCancha, setNewCancha] = useState({ Nombre: '', Direccion: '', Superficie: '', Tamanio: '', Precio_hora: '', Disciplina_id: ''});
+  const [fileName, setFileName] = useState('Agrega imagen');
+  const [showPopover, setShowPopover] = useState(false);
+  const [popoverMessage, setPopoverMessage] = useState('');
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -34,104 +31,117 @@ export default function page() {
     }
   };
 
+  useEffect(() => {
+    if (showPopover) {
+      const timer = setTimeout(() => {
+        setShowPopover(false);
+      }, 3000); // Cierra el popover después de 3 segundos
+      return () => clearTimeout(timer);
+    }
+  }, [showPopover]);
+
   // Manejar el cambio en los inputs del formulario
   const handleInputChange = (e) => {
-    const { name, value } = e.target; // Accede a `name` y `value` de `e.target`
-    setNewCancha((prevState) => ({
+    const { name, value } = e.target;
+    setNewCancha(prevState => ({
       ...prevState,
-      [name]: value, // Usa el valor de `name` para actualizar la propiedad correspondiente
+      [name]: value
     }));
   };
 
+
   // Función para agregar una nueva cancha
-  const handleSubmit = async (e) => {
+   // Función para agregar una nueva cancha
+   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { data: existingCancha, error } = await supabase
+  
+    // Validación del archivo
+    if (!file) {
+      setPopoverMessage('Por favor, selecciona una imagen para la cancha.');
+      setIsError(true);
+      setShowPopover(true);
+      return;
+    }
+  
+    // Verificación de nombre existente
+    const { data: existingCancha, error: existingError } = await supabase
       .from('Cancha')
       .select('Nombre')
-      .eq('Nombre', newCancha.Nombre)
-      .single();
-
-    if (existingError || !existingCancha) {
-      console.error('Error al verificar el nombre existente:', existingError);
-      setError('Error al verificar el nombre existente.');
+      .eq('Nombre', newCancha.Nombre);
+  
+    if (existingError || existingCancha.length > 0) {
+      setPopoverMessage('Una cancha con este nombre ya existe.');
+      setIsError(true);
+      setShowPopover(true);
       return;
     }
-
-    if (existingCancha.length > 0) {
-      setError('Una cancha con este nombre ya existe.');
-      console.log('Una cancha con este nombre ya existe.');
-      return;
-    }
-
-    let uploadUrl = null;
-
-    // Subir archivo si existe
-    if (file) {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('imagenes_canchas')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Error uploading file:', uploadError);
-        setError('Error al subir la imagen.');
-        return;
-      }
-      uploadUrl = `${
-        supabase.storage.from('imagenes_canchas').getPublicUrl(fileName)
-          .publicURL
-      }`;
-    }
-
-    // Intentar insertar nueva cancha
+  
+    // Inserción de nueva cancha
     const { data: newCanchaData, error: insertError } = await supabase
       .from('Cancha')
-      .insert([{ ...newCancha, Url_imagen: uploadUrl || '' }]);
-
-    if (insertError || !newCanchaData) {
-      console.error('Error inserting data:', insertError);
-      setError('Error al insertar la cancha.');
+      .insert([{ ...newCancha }])
+      .select();
+  
+    if (insertError) {
+      setPopoverMessage('Error al insertar la cancha.');
+      setIsError(true);
+      setShowPopover(true);
       return;
     }
-
-    console.log('Cancha agregada correctamente:', newCanchaData);
-
-    if (uploadUrl && newCanchaData.length > 0) {
-      const { data: imageData, error: imageError } = await supabase
-        .from('Imagen_cancha')
-        .insert([
-          {
-            cancha_id: newCanchaData[0].id, // Usar con cuidado
-            url_img: uploadUrl,
-          },
-        ]);
-
-      if (imageError) {
-        console.error('Error inserting image data:', imageError);
-        setError('Error al insertar datos de imagen.');
-      } else {
-        console.log('Imagen asociada correctamente a la cancha:', imageData);
-      }
+  
+    // Subir imagen
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('imagenes_canchas')
+      .upload(fileName, file);
+  
+    if (uploadError) {
+      setPopoverMessage('Error al subir la imagen.');
+      setIsError(true);
+      setShowPopover(true);
+      return;
     }
-
-    setNewCancha({
-      Nombre: '',
-      Direccion: '',
-      Superficie: '',
-      Tamanio: '',
-      Precio_hora: '',
-      Disciplina_id: '',
-    });
+  
+    // Obtener URL pública de la imagen
+    const { data: { publicUrl }, error: publicUrlError } = supabase
+      .storage
+      .from('imagenes_canchas')
+      .getPublicUrl(fileName);
+  
+    if (publicUrlError) {
+      setPopoverMessage('Error al obtener la URL pública de la imagen.');
+      setIsError(true);
+      setShowPopover(true);
+      return;
+    }
+  
+    console.log('URL de la imagen subida:', publicUrl); // Verificar la URL de la imagen
+  
+    // Inserción de imagen
+    const { data: imageData, error: imageError } = await supabase
+      .from('Imagen_cancha')
+      .insert([{ Cancha_id: newCanchaData[0].id, Url_img: publicUrl }]);
+  
+    if (imageError) {
+      setPopoverMessage('Error al insertar datos de imagen.');
+      setIsError(true);
+      setShowPopover(true);
+      return;
+    }
+  
+    setPopoverMessage('Cancha agregada correctamente.');
+    setIsError(false);
+    setShowPopover(true);
+  
+    setNewCancha({ Nombre: '', Direccion: '', Superficie: '', Tamanio: '', Precio_hora: '', Disciplina_id: '' });
     fetchCanchas();
-    setError('');
     setFile(null);
     setFileName('Agrega imagen');
   };
 
-  // Función para eliminar una cancha
-  const handleDelete = async (id) => {
+   // Función para eliminar una cancha
+   const handleDelete = async (id) => {
     const { data, error } = await supabase
       .from('Cancha')
       .delete()
@@ -139,7 +149,7 @@ export default function page() {
 
     if (error) {
       console.error('Error deleting cancha:', error);
-      setError('Error al eliminar la cancha.');
+      setErrorMessage('Error al eliminar la cancha.');
     } else {
       fetchCanchas();
     }
@@ -221,7 +231,7 @@ export default function page() {
             </tbody>
           </table>
         </div>
-        {error && <p className="text-red-500">{error}</p>}
+        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
         <div className="m-4">
           <h1>Ingresa una nueva Cancha:</h1>
         </div>
@@ -308,7 +318,7 @@ export default function page() {
               onChange={handleInputChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              <option value="" selected>
+              <option value=''>
                 Seleccione una disciplina
               </option>
               <option value="1">Fútbol</option>
@@ -332,14 +342,17 @@ export default function page() {
               required
             />
           </div>
-
-          <Button
-            type="submit"
-            className="flex justify-center align-items-center mt-4"
-          >
-            Agregar Cancha
-          </Button>
         </form>
+        <Popover open={showPopover} onOpenChange={setShowPopover}>
+          <PopoverTrigger asChild>
+            <Button className="flex justify-center align-items-center mt-4" onClick={handleSubmit}>
+              Agregar Cancha
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <p className={isError ? "text-red-500" : "text-green-500"}>{popoverMessage}</p>
+          </PopoverContent>
+        </Popover>
       </main>
       <Footer />
     </>

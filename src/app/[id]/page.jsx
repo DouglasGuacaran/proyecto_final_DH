@@ -63,7 +63,7 @@ export default function page() {
             src={imagen}
             alt="imagen de la cancha"
           />
-          <div class="flex flex-col justify-between p-4 leading-normal flex-1 min-h-72">
+          <div className="flex flex-col justify-between p-4 leading-normal flex-1 min-h-72">
             <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               {Nombre}
             </h5>
