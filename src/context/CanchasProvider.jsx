@@ -19,7 +19,6 @@ export const CanchasProvider = ({ children }) => {
         `
           id,
           Nombre,
-          Direccion,
           Superficie,
           Tamanio,
           Precio_hora,

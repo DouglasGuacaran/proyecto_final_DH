@@ -14,7 +14,7 @@ const supabase = createClient();
 export default function page() {
   const [file, setFile] = useState(null);
   const { canchas, fetchCanchas } = useCanchas();
-  const [newCancha, setNewCancha] = useState({ Nombre: '', Direccion: '', Superficie: '', Tamanio: '', Precio_hora: '', Disciplina_id: ''});
+  const [newCancha, setNewCancha] = useState({ Nombre: '', Superficie: '', Tamanio: '', Precio_hora: '', Disciplina_id: ''});
   const [fileName, setFileName] = useState('Agrega imagen');
   const [showPopover, setShowPopover] = useState(false);
   const [popoverMessage, setPopoverMessage] = useState('');
@@ -134,7 +134,7 @@ export default function page() {
     setIsError(false);
     setShowPopover(true);
   
-    setNewCancha({ Nombre: '', Direccion: '', Superficie: '', Tamanio: '', Precio_hora: '', Disciplina_id: '' });
+    setNewCancha({ Nombre: '', Superficie: '', Tamanio: '', Precio_hora: '', Disciplina_id: '' });
     fetchCanchas();
     setFile(null);
     setFileName('Agrega imagen');
@@ -189,9 +189,6 @@ export default function page() {
                   Nombre
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Dirección
-                </th>
-                <th scope="col" className="px-6 py-3">
                   Tipo de Superficie
                 </th>
                 <th scope="col" className="px-6 py-3">
@@ -212,7 +209,6 @@ export default function page() {
               {canchas.map((cancha) => (
                 <tr key={cancha.id} className="bg-white border-b">
                   <td className="px-6 py-4">{cancha.Nombre}</td>
-                  <td className="px-6 py-4">{cancha.Direccion}</td>
                   <td className="px-6 py-4">{cancha.Superficie}</td>
                   <td className="px-6 py-4">{cancha.Tamanio}</td>
                   <td className="px-6 py-4">{cancha.Precio_hora}</td>
@@ -246,20 +242,6 @@ export default function page() {
             type="text"
             name="Nombre"
             value={newCancha.Nombre}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-          <label
-            htmlFor="Direccion"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Dirección del complejo deportivo:
-          </label>
-          <input
-            type="text"
-            name="Direccion"
-            value={newCancha.Direccion}
             onChange={handleInputChange}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required

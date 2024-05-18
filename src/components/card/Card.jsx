@@ -2,7 +2,7 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 
 const Card = ({ dataCancha }) => {
-  const { id, Nombre, Direccion, Precio_hora, imagen, Superficie, Tamanio } =
+  const { id, Nombre, Precio_hora, imagen, Superficie, Tamanio } =
     dataCancha;
 
   return (

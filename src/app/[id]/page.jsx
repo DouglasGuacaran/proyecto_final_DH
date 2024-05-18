@@ -22,7 +22,6 @@ export default function page() {
           `
           id,
           Nombre,
-          Direccion,
           Superficie,
           Tamanio,
           Precio_hora,
@@ -49,7 +48,7 @@ export default function page() {
     }
   }, [id]);
 
-  const { Nombre, Direccion, Precio_hora, imagen, Superficie, Tamanio } =
+  const { Nombre, Precio_hora, imagen, Superficie, Tamanio } =
     cancha;
 
   return (
