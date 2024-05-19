@@ -1,16 +1,21 @@
 'use client';
+import { Toaster } from '@/components/ui/toaster';
 import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from '@/components/ui/popover';
-import { useEffect, useState } from 'react';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useState } from 'react';
 import Footer from '@/components/footer/Footer';
 import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/button';
 import { useCanchas } from '@/context/CanchasProvider';
 import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
 
 // Inicializar cliente de Supabase
 const supabase = createClient();
@@ -25,30 +30,32 @@ export default function page() {
     Precio_hora: '',
     Disciplina_id: '',
   });
-  const [fileName, setFileName] = useState('Agrega imagen');
-  const [showPopover, setShowPopover] = useState(false);
-  const [popoverMessage, setPopoverMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errors, setErrors] = useState({
+    Nombre: '',
+    Superficie: '',
+    Tamanio: '',
+    Precio_hora: '',
+    Disciplina_id: '',
+    Imagen: '',
+  });
+  const [supabaseErrors, setSupabaseErrors] = useState({
+    canchaExiste: '',
+    insertError: '',
+    uploadError: '',
+    publicUrlError: '',
+    imageError: '',
+  });
+  const [supabaseDeleteError, setSupabaseDeleteError] = useState('');
+  const { toast } = useToast();
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       setFile(file);
-      setFileName(file.name);
     } else {
-      setFileName('Agrega imagen');
+      setFile(null);
     }
   };
-
-  useEffect(() => {
-    if (showPopover) {
-      const timer = setTimeout(() => {
-        setShowPopover(false);
-      }, 3000); // Cierra el popover después de 3 segundos
-      return () => clearTimeout(timer);
-    }
-  }, [showPopover]);
 
   // Manejar el cambio en los inputs del formulario
   const handleInputChange = (e) => {
@@ -59,18 +66,79 @@ export default function page() {
     }));
   };
 
-  // Función para agregar una nueva cancha
+  // Manejar cambio en el select
+  const handleSelectChange = (value) => {
+    setNewCancha((prevState) => ({
+      ...prevState,
+      Disciplina_id: value,
+    }));
+  };
+
   // Función para agregar una nueva cancha
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación del archivo
+    let newErrors = {
+      Nombre: '',
+      Superficie: '',
+      Tamanio: '',
+      Precio_hora: '',
+      Disciplina_id: '',
+      Imagen: '',
+    };
+
+    // validaciones generales
+    if (newCancha.Nombre == '') {
+      newErrors.Nombre = 'Por favor, ingrese un nombre para la cancha.';
+    }
+    if (newCancha.Superficie == '') {
+      newErrors.Superficie =
+        'Por favor, ingrese una superficie para la cancha.';
+    }
+    if (newCancha.Tamanio == '') {
+      newErrors.Tamanio = 'Por favor, ingrese un tamaño para la cancha.';
+    }
+    if (newCancha.Precio_hora == '') {
+      newErrors.Precio_hora = 'Por favor, ingrese un precio para la cancha.';
+    }
+    if (newCancha.Disciplina_id == '') {
+      newErrors.Disciplina_id =
+        'Por favor, seleccione una disciplina para la cancha.';
+    }
+
+    // Validación de la imagen
     if (!file) {
-      setPopoverMessage('Por favor, selecciona una imagen para la cancha.');
-      setIsError(true);
-      setShowPopover(true);
+      newErrors.Imagen = 'Por favor, seleccione una imagen para la cancha.';
+    }
+
+    if (
+      newErrors.Nombre ||
+      newErrors.Superficie ||
+      newErrors.Tamanio ||
+      newErrors.Precio_hora ||
+      newErrors.Disciplina_id ||
+      newErrors.Imagen
+    ) {
+      setErrors(newErrors);
       return;
     }
+
+    setErrors({
+      Nombre: '',
+      Superficie: '',
+      Tamanio: '',
+      Precio_hora: '',
+      Disciplina_id: '',
+      Imagen: '',
+    });
+
+    let newSupabaseErrors = {
+      canchaExiste: '',
+      insertError: '',
+      uploadError: '',
+      publicUrlError: '',
+      imageError: '',
+    };
 
     // Verificación de nombre existente
     const { data: existingCancha, error: existingError } = await supabase
@@ -79,9 +147,8 @@ export default function page() {
       .eq('Nombre', newCancha.Nombre);
 
     if (existingError || existingCancha.length > 0) {
-      setPopoverMessage('Una cancha con este nombre ya existe.');
-      setIsError(true);
-      setShowPopover(true);
+      newSupabaseErrors.canchaExiste = 'Una cancha con este nombre ya existe';
+      setSupabaseErrors(newSupabaseErrors);
       return;
     }
 
@@ -92,9 +159,8 @@ export default function page() {
       .select();
 
     if (insertError) {
-      setPopoverMessage('Error al insertar la cancha.');
-      setIsError(true);
-      setShowPopover(true);
+      newSupabaseErrors.insertError = 'Error al insertar la cancha';
+      setSupabaseErrors(newSupabaseErrors);
       return;
     }
 
@@ -106,9 +172,8 @@ export default function page() {
       .upload(fileName, file);
 
     if (uploadError) {
-      setPopoverMessage('Error al subir la imagen.');
-      setIsError(true);
-      setShowPopover(true);
+      newSupabaseErrors.uploadError = 'Error al subir la imagen';
+      setSupabaseErrors(newSupabaseErrors);
       return;
     }
 
@@ -119,13 +184,11 @@ export default function page() {
     } = supabase.storage.from('imagenes_canchas').getPublicUrl(fileName);
 
     if (publicUrlError) {
-      setPopoverMessage('Error al obtener la URL pública de la imagen.');
-      setIsError(true);
-      setShowPopover(true);
+      newSupabaseErrors.publicUrlError =
+        'Error al obtener la URL pública de la imagen';
+      setSupabaseErrors(newSupabaseErrors);
       return;
     }
-
-    console.log('URL de la imagen subida:', publicUrl); // Verificar la URL de la imagen
 
     // Inserción de imagen
     const { data: imageData, error: imageError } = await supabase
@@ -133,16 +196,23 @@ export default function page() {
       .insert([{ Cancha_id: newCanchaData[0].id, Url_img: publicUrl }]);
 
     if (imageError) {
-      setPopoverMessage('Error al insertar datos de imagen.');
-      setIsError(true);
-      setShowPopover(true);
+      newSupabaseErrors.imageError = 'Error al insertar datos de imagen';
+      setSupabaseErrors(newSupabaseErrors);
       return;
     }
 
-    setPopoverMessage('Cancha agregada correctamente.');
-    setIsError(false);
-    setShowPopover(true);
+    toast({
+      title: 'Nueva Cancha',
+      description: `La cancha ${newCancha.Nombre} fue agregada correctamente!`,
+    });
 
+    setSupabaseErrors({
+      canchaExiste: '',
+      insertError: '',
+      uploadError: '',
+      publicUrlError: '',
+      imageError: '',
+    })
     setNewCancha({
       Nombre: '',
       Superficie: '',
@@ -150,74 +220,67 @@ export default function page() {
       Precio_hora: '',
       Disciplina_id: '',
     });
-    fetchCanchas();
     setFile(null);
-    setFileName('Agrega imagen');
+    fetchCanchas();
   };
 
   // Función para eliminar una cancha
-const handleDelete = async (id) => {
-  try {
-    // 1: Buscamos las url de las imagenes
-    const { data: images, error: imagesError } = await supabase
-      .from('Imagen_cancha')
-      .select('Url_img')
-      .eq('Cancha_id', id);
+  const handleDelete = async (id) => {
+    try {
+      // 1: Buscamos las url de las imagenes
+      const { data: images, error: imagesError } = await supabase
+        .from('Imagen_cancha')
+        .select('Url_img')
+        .eq('Cancha_id', id);
 
-    if (imagesError) {
-      console.error('Error fetching images:', imagesError);
-      setErrorMessage('Error al obtener las imágenes de la cancha.');
-      return;
+      if (imagesError) {
+        setSupabaseDeleteError('Error al obtener las imágenes de la cancha.');
+        return;
+      }
+
+      // 2: Eliminamos las imagenes del storage
+      const deletePromises = images.map((image) => {
+        // Extract the image file name from the URL
+        const urlParts = image.Url_img.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        return supabase.storage.from('imagenes_canchas').remove([fileName]);
+      });
+
+      const deleteResults = await Promise.all(deletePromises);
+      const storageErrors = deleteResults.filter((result) => result.error);
+      if (storageErrors.length > 0) {
+        setSupabaseDeleteError(
+          'Error al eliminar las imágenes del almacenamiento.'
+        );
+        return;
+      }
+
+      // 3: Eliminamos las imagenes de la tabla Imagen_cancha
+      const { error: deleteImagesError } = await supabase
+        .from('Imagen_cancha')
+        .delete()
+        .eq('Cancha_id', id);
+
+      if (deleteImagesError) {
+        setSupabaseDeleteError('Error al eliminar las imágenes de la cancha.');
+        return;
+      }
+
+      // 4: Eliminamos la cancha de la tabla Cancha
+      const { error: deleteCanchaError } = await supabase
+        .from('Cancha')
+        .delete()
+        .match({ id });
+
+      if (deleteCanchaError) {
+        setSupabaseDeleteError('Error al eliminar la cancha.');
+      } else {
+        fetchCanchas();
+      }
+    } catch (error) {
+      setSupabaseDeleteError('Se produjo un error inesperado.');
     }
-
-    // 2: Eliminamos las imagenes del storage
-    const deletePromises = images.map((image) => {
-      // Extract the image file name from the URL
-      const urlParts = image.Url_img.split('/');
-      const fileName = urlParts[urlParts.length - 1];
-      return supabase.storage
-        .from('imagenes_canchas')
-        .remove([fileName]);
-    });
-    
-    const deleteResults = await Promise.all(deletePromises);
-    const storageErrors = deleteResults.filter(result => result.error);
-    if (storageErrors.length > 0) {
-      console.error('Error deleting images from storage:', storageErrors);
-      setErrorMessage('Error al eliminar las imágenes del almacenamiento.');
-      return;
-    }
-
-    // 3: Eliminamos las imagenes de la tabla Imagen_cancha
-    const { error: deleteImagesError } = await supabase
-      .from('Imagen_cancha')
-      .delete()
-      .eq('Cancha_id', id);
-
-    if (deleteImagesError) {
-      console.error('Error deleting imagenes:', deleteImagesError);
-      setErrorMessage('Error al eliminar las imágenes de la cancha.');
-      return;
-    }
-
-    // 4: Eliminamos la cancha de la tabla Cancha
-    const { error: deleteCanchaError } = await supabase
-      .from('Cancha')
-      .delete()
-      .match({ id });
-
-    if (deleteCanchaError) {
-      console.error('Error deleting cancha:', deleteCanchaError);
-      setErrorMessage('Error al eliminar la cancha.');
-    } else {
-      fetchCanchas();
-    }
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    setErrorMessage('Se produjo un error inesperado.');
-  }
-};
-
+  };
 
   return (
     <>
@@ -243,31 +306,33 @@ const handleDelete = async (id) => {
           desktop
         </h2>
       </div>
-      <main className="hidden md:block text-sm sm:text-base md:text-lg lg:text-xl min-h-screen p-4 mt-20">
-        <h1 className="text-xl font-bold">Dashboard de Canchas</h1>
-        <div className="mt-4">
-          <table className="w-full text-sm text-left text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+      <main className="hidden md:block text-sm sm:text-base md:text-lg lg:text-xl min-h-screen p-4 mt-32 flex flex-col">
+        <h1 className="text-2xl font-semibold ml-6 antialiased">
+          Admin Dashboard
+        </h1>
+        <div className="mt-10 px-6">
+          <table className="w-full text-sm text-left text-black">
+            <thead className="text-sm text-gray-700 uppercase bg-[#F4F4F4]">
               <tr>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Nombre
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Tipo de Superficie
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Tamaño
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Precio de la hora
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Disciplina
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Imagen
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-6 py-3 font-semibold">
                   Acciones
                 </th>
               </tr>
@@ -275,7 +340,7 @@ const handleDelete = async (id) => {
             <tbody>
               {canchas.map((cancha) => (
                 <tr key={cancha.id} className="bg-white border-b">
-                  <td className="px-6 py-4">{cancha.Nombre}</td>
+                  <td className="px-6 py-4 font-medium">{cancha.Nombre}</td>
                   <td className="px-6 py-4">{cancha.Superficie}</td>
                   <td className="px-6 py-4">{cancha.Tamanio}</td>
                   <td className="px-6 py-4">{cancha.Precio_hora}</td>
@@ -290,7 +355,11 @@ const handleDelete = async (id) => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <Button onClick={() => handleDelete(cancha.id)} size='icon' className='border border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white'>
+                    <Button
+                      onClick={() => handleDelete(cancha.id)}
+                      size="icon"
+                      className="border border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -312,117 +381,151 @@ const handleDelete = async (id) => {
             </tbody>
           </table>
         </div>
-        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {supabaseDeleteError && (
+          <h2 className="text-xs text-red-600 text-center my-6">
+            {supabaseDeleteError}
+          </h2>
+        )}
         <div className="m-4">
-          <h1>Ingresa una nueva Cancha:</h1>
+          <h2 className="text-xl font-semibold ml-6 antialiased mt-20 mb-10">
+            Ingresar Nueva Cancha
+          </h2>
         </div>
-        <form onSubmit={handleSubmit} className="mb-4">
-          <label
-            htmlFor="nombre"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Nombre de la cancha:
-          </label>
-          <input
-            type="text"
-            name="Nombre"
-            value={newCancha.Nombre}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-          <label
-            htmlFor="Superficie"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Tipo de Superficie:
-          </label>
-          <input
-            type="text"
-            name="Superficie"
-            value={newCancha.Superficie}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-          <label
-            htmlFor="Tamanio"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Tamaño de la cancha:
-          </label>
-          <input
-            type="text"
-            name="Tamanio"
-            value={newCancha.Tamanio}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-          <label
-            htmlFor="Precio_hora"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Valor de la hora:
-          </label>
-          <input
-            name="Precio_hora"
-            value={newCancha.Precio_hora}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-          <div className="row">
-            <label
-              htmlFor="Disciplina_id"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Disciplina:
-            </label>
-            <select
+        <form
+          onSubmit={handleSubmit}
+          className=" max-w-xl ml-10 flex flex-col gap-5"
+        >
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="Nombre">Nombre</Label>
+            <Input
+              type="text"
+              name="Nombre"
+              value={newCancha.Nombre}
+              onChange={handleInputChange}
+              className={`${errors.Nombre ? 'border border-red-600' : ''}`}
+            />
+            {errors.Nombre && (
+              <span className="text-xs text-red-600 mt-1 ml-2">
+                {errors.Nombre}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="Superficie">Tipo de Superficie</Label>
+            <Input
+              type="text"
+              name="Superficie"
+              value={newCancha.Superficie}
+              onChange={handleInputChange}
+              className={`${errors.Superficie ? 'border border-red-600' : ''}`}
+            />
+            {errors.Superficie && (
+              <span className="text-xs text-red-600 mt-1 ml-2">
+                {errors.Superficie}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="Tamanio">Tamaño</Label>
+            <Input
+              type="text"
+              name="Tamanio"
+              value={newCancha.Tamanio}
+              onChange={handleInputChange}
+              className={`${errors.Tamanio ? 'border border-red-600' : ''}`}
+            />
+            {errors.Tamanio && (
+              <span className="text-xs text-red-600 mt-1 ml-2">
+                {errors.Tamanio}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="Precio_hora">Valor hora</Label>
+            <Input
+              name="Precio_hora"
+              value={newCancha.Precio_hora}
+              onChange={handleInputChange}
+              className={`${errors.Precio_hora ? 'border border-red-600' : ''}`}
+            />
+            {errors.Precio_hora && (
+              <span className="text-xs text-red-600 mt-1 ml-2">
+                {errors.Precio_hora}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="Disciplina_id">Disciplina</Label>
+            <Select
               name="Disciplina_id"
               value={newCancha.Disciplina_id}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              onValueChange={handleSelectChange}
             >
-              <option value="">Seleccione una disciplina</option>
-              <option value="1">Fútbol</option>
-              <option value="2">Tenis</option>
-              <option value="3">Paddel</option>
-            </select>
+              <SelectTrigger
+                className={`${
+                  errors.Disciplina_id ? 'border border-red-600' : ''
+                }`}
+              >
+                <SelectValue placeholder="Seleccione una disciplina" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Fútbol</SelectItem>
+                <SelectItem value="2">Tennis</SelectItem>
+                <SelectItem value="3">Paddle</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.Disciplina_id && (
+              <span className="text-xs text-red-600 mt-1 ml-2">
+                {errors.Disciplina_id}
+              </span>
+            )}
           </div>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <label
-              className="block text-sm font-medium text-gray-700"
-              htmlFor="file_inp"
-            >
-              Agregar Imagen:
-            </label>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="file_inp">Imagen</Label>
             <Input
               id="file_inp"
               name="file_inp"
               type="file"
               onChange={handleFileChange}
-              required
+              className={`${errors.Imagen ? 'border border-red-600' : ''}`}
             />
+            {errors.Imagen && (
+              <span className="text-xs text-red-600 ml-2">{errors.Imagen}</span>
+            )}
           </div>
+          <Button className="my-5 w-[180px]" onClick={handleSubmit}>
+            Agregar Cancha
+          </Button>
         </form>
-        <Popover open={showPopover} onOpenChange={setShowPopover}>
-          <PopoverTrigger asChild>
-            <Button
-              className="flex justify-center align-items-center mt-4"
-              onClick={handleSubmit}
-            >
-              Agregar Cancha
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <p className={isError ? 'text-red-500' : 'text-green-500'}>
-              {popoverMessage}
-            </p>
-          </PopoverContent>
-        </Popover>
+
+        {supabaseErrors.canchaExiste && (
+          <span className="text-xs text-red-600 -mt-10 ml-10">
+            {supabaseErrors.canchaExiste}
+          </span>
+        )}
+        {supabaseErrors.insertError && (
+          <span className="text-xs text-red-600 -mt-10 ml-10">
+            {supabaseErrors.insertError}
+          </span>
+        )}
+        {supabaseErrors.uploadError && (
+          <span className="text-xs text-red-600 -mt-10 ml-10">
+            {supabaseErrors.uploadError}
+          </span>
+        )}
+        {supabaseErrors.publicUrlError && (
+          <span className="text-xs text-red-600 -mt-10 ml-10">
+            {supabaseErrors.publicUrlError}
+          </span>
+        )}
+        {supabaseErrors.imageError && (
+          <span className="text-xs text-red-600 -mt-10 ml-10">
+            {supabaseErrors.imageError}
+          </span>
+        )}
+
+        <Toaster />
       </main>
       <Footer />
     </>
