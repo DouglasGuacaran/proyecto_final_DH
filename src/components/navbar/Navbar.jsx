@@ -1,26 +1,33 @@
 'use client';
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { Button } from '../ui/button';
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const openMenu = () => setIsOpen(!isOpen)
+  const [isOpen, setIsOpen] = useState(false);
+  const openMenu = () => setIsOpen(!isOpen);
   return (
-    <nav className="bg-white border-gray-200">
+    <nav className="fixed top-0 w-full bg-white border-gray-200 z-10">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link
           href="/"
           className="flex items-center space-x-3 rtl:space-x-reverse"
         >
-          <Image src={'/logo-sinfondo.png'} width={50} height={50} priority alt="Logo de entretiempo"/>
+          <Image
+            src={'/logo-sinfondo.png'}
+            width={50}
+            height={50}
+            priority
+            alt="Logo de entretiempo"
+          />
           <span className="self-center text-2xl font-semibold whitespace-nowrap">
             EntreTiempo
           </span>
         </Link>
-        <button
+        <Button
           data-collapse-toggle="navbar-default"
-          type="button"
+          variant="ghost"
           className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
           aria-controls="navbar-default"
           aria-expanded={isOpen}
@@ -42,31 +49,25 @@ export default function Navbar() {
               d="M1 1h15M1 7h15M1 13h15"
             />
           </svg>
-        </button>
-        <div className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`} id="navbar-default">
+        </Button>
+        <div
+          className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
+          id="navbar-default"
+        >
           <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white ">
             <li>
-              <Link
-                href="/"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
-              >
-                Crear Cuenta
+              <Link href="/">
+                <Button variant="link" className='text-base'>Crear Cuenta</Button>
               </Link>
             </li>
             <li>
-              <Link
-                href="/"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
-              >
-                Iniciar Sesión
+              <Link href="/">
+                <Button variant="link" className='text-base'>Iniciar Sesión</Button>
               </Link>
             </li>
             <li>
-              <Link
-                href="/dashboard"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
-              >
-                Admin
+              <Link href="/dashboard">
+                <Button variant="link" className='text-base'>Admin</Button>
               </Link>
             </li>
           </ul>
