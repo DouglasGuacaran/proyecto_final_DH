@@ -1,14 +1,63 @@
-import React from 'react'
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import Image from 'next/image'
-import Navbar from '@/components/navbar/Navbar'
-import Footer from '@/components/footer/Footer'
+"use client"
+import React, { useState } from 'react';
+import Link from "next/link";
+import Image from 'next/image';
+import Navbar from '@/components/navbar/Navbar';
+import Footer from '@/components/footer/Footer';
+import { createClient } from '../../utils/supabase/client'; // Ajusta la ruta según la ubicación de tu archivo
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
+const supabase = createClient();
 
-const page = () => {
+const Page = () => {
+    const [formData, setFormData] = useState({
+        fullname: "",
+        email: "",
+        telefono: "",
+        password: ""
+    });
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const { email, password, fullname, telefono } = formData;
+
+        try {
+            // Registra un nuevo usuario en Supabase
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        fullname,
+                        telefono
+                    }
+                }
+            });
+
+            if (error) {
+                console.error('Error al registrar:', error);
+                alert('Error al registrar: ' + error.message);
+            } else {
+                console.log('Usuario registrado:', data);
+                alert('Registro exitoso!');
+                // Aquí puedes redirigir al usuario a otra página o manejar el estado de sesión
+            }
+        } catch (error) {
+            console.error('Error inesperado:', error);
+            alert('Error inesperado: ' + error.message);
+        }
+    };
+
     return (
         <>
             <Navbar />
@@ -19,22 +68,22 @@ const page = () => {
                         <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">EntreTiempo</h1>
                     </div>
                     <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-900">
-                        <form className="space-y-4">
+                        <form className="space-y-4" onSubmit={handleSubmit}>
                             <div className="space-y-2">
-                                <Label htmlFor="fullName">Nombre</Label>
-                                <Input id="nombreCompleto" placeholder="Ingrese su nombre completo" />
+                                <Label htmlFor="fullname">Nombre</Label>
+                                <Input id="fullname" placeholder="Ingrese su nombre completo" value={formData.fullname} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" placeholder="Ingrese su correo electronico" type="email" />
+                                <Input id="email" placeholder="Ingrese su correo electronico" type="email" value={formData.email} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="telefono">Telefono</Label>
-                                <Input id="telefono" placeholder="Ingrese su numero celular" type="phone" />
+                                <Input id="telefono" placeholder="Ingrese su numero celular" type="phone" value={formData.telefono} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password">Contraseña</Label>
-                                <Input id="password" placeholder="Ingrese su contraseña" type="password" />
+                                <Input id="password" placeholder="Ingrese su contraseña" type="password" value={formData.password} onChange={handleChange} />
                             </div>
                             <Button className="w-full" type="submit">
                                 Registrarse
@@ -51,7 +100,7 @@ const page = () => {
             </div>
             <Footer />
         </>
-    )
-}
+    );
+};
 
-export default page
+export default Page;
