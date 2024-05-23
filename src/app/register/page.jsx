@@ -15,7 +15,7 @@ const Page = () => {
     const [formData, setFormData] = useState({
         fullname: "",
         email: "",
-        telefono: "",
+        phone: "",
         password: ""
     });
 
@@ -26,10 +26,11 @@ const Page = () => {
         });
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const { email, password, fullname, telefono } = formData;
+        const { email, password, name, lastName, phone } = formData;
 
         try {
             // Registra un nuevo usuario en Supabase
@@ -38,8 +39,9 @@ const Page = () => {
                 password,
                 options: {
                     data: {
-                        fullname,
-                        telefono
+                        name,
+                        lastName,
+                        phone
                     }
                 }
             });
@@ -58,6 +60,9 @@ const Page = () => {
         }
     };
 
+
+
+
     return (
         <>
             <Navbar />
@@ -70,16 +75,20 @@ const Page = () => {
                     <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-900">
                         <form className="space-y-4" onSubmit={handleSubmit}>
                             <div className="space-y-2">
-                                <Label htmlFor="fullname">Nombre</Label>
-                                <Input id="fullname" placeholder="Ingrese su nombre completo" value={formData.fullname} onChange={handleChange} />
+                                <Label htmlFor="name">Nombre</Label>
+                                <Input id="name" placeholder="Ingrese su nombre nombre" value={formData.name} onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="lastName">Apellido</Label>
+                                <Input id="lastName" placeholder="Ingrese su apellido" value={formData.lastName} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input id="email" placeholder="Ingrese su correo electronico" type="email" value={formData.email} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="telefono">Telefono</Label>
-                                <Input id="telefono" placeholder="Ingrese su numero celular" type="phone" value={formData.telefono} onChange={handleChange} />
+                                <Label htmlFor="phone">Telefono</Label>
+                                <Input id="phone" placeholder="Ingrese su numero celular" type="phone" value={formData.phone} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password">Contraseña</Label>
