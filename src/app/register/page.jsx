@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const supabase = createClient();
-
+let nombreCompleto = '';
 const Page = () => {
     const [formData, setFormData] = useState({
         fullname: "",
@@ -26,15 +26,14 @@ const Page = () => {
         });
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const { email, password, name, lastName, phone } = formData;
 
         try {
-            // Registra un nuevo usuario en Supabase
-            const { data, error } = await supabase.auth.signUp({
+            // Registro en supabase
+            const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -46,14 +45,29 @@ const Page = () => {
                 }
             });
 
-            if (error) {
-                console.error('Error al registrar:', error);
-                alert('Error al registrar: ' + error.message);
-            } else {
-                console.log('Usuario registrado:', data);
-                alert('Registro exitoso!');
-                // Aquí puedes redirigir al usuario a otra página o manejar el estado de sesión
+            if (authError) {
+                console.error('Error al registrar:', authError);
+                alert('Error al registrar: ' + authError.message);
+                return;
             }
+
+            console.log('Usuario registrado:', authData);
+            const nombreCompleto = name + ' ' + lastName;
+
+            // Registro en tabla "Usuario"
+            const { data: insertData, error: insertError } = await supabase
+                .from('Usuario')
+                .insert([
+                    { Nombre: nombreCompleto, Correo: email, Telefono: phone, Contrasenia: password, uid: authData.user.id, Rol: 'Usuario' },
+                ]);
+
+            if (insertError) {
+                console.error('Error al guardar en la tabla personalizada:', insertError);
+                alert('Error al guardar en la tabla personalizada: ' + insertError.message);
+                return;
+            }
+
+            alert('Registro exitoso!');
         } catch (error) {
             console.error('Error inesperado:', error);
             alert('Error inesperado: ' + error.message);

@@ -9,6 +9,7 @@ import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { createClient } from '../../utils/supabase/client';
 
+
 const supabase = createClient();
 
 const Page = () => {
@@ -37,7 +38,8 @@ const Page = () => {
             } else {
                 console.log('Usuario autenticado:', data);
                 alert('Inicio de sesión exitoso!');
-                // Aquí puedes redirigir al usuario a otra página o manejar el estado de sesión
+
+                //Falta redirigir a pag inicio
             }
         } catch (error) {
             console.error('Error inesperado:', error);
