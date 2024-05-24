@@ -335,6 +335,9 @@ export default function page() {
                 <th scope="col" className="px-6 py-3 font-semibold">
                   Acciones
                 </th>
+                <th scope="col" className="px-6 py-3 font-semibold">
+                  Caracteristicas
+                  </th>
               </tr>
             </thead>
             <tbody>
@@ -440,6 +443,7 @@ export default function page() {
               </span>
             )}
           </div>
+
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="Precio_hora">Valor hora</Label>
             <Input
@@ -454,6 +458,23 @@ export default function page() {
               </span>
             )}
           </div>
+
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="Caracteristicas">Caracteristicas</Label>
+            <Input
+              type="text"
+              name="Caracteristicas"
+              value={newCancha.Caracteristicas}
+              onChange={handleInputChange}
+              className={`${errors.Caracteristicas ? 'border border-red-600' : ''}`}
+            />
+            {errors.Caracteristicas && (
+              <span className="text-xs text-red-600 mt-1 ml-2">
+                {errors.Caracteristicas}
+              </span>
+            )}
+          </div>
+
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="Disciplina_id">Disciplina</Label>
             <Select
