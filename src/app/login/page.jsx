@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from 'next/image';
-import Navbar from '@/components/navbar/Navbar';
+import Navbar from '@/components/navbar/navbar';
 import Footer from '@/components/footer/Footer';
 import { createClient } from '../../utils/supabase/client';
 import { redirect } from 'next/dist/server/api-utils';
@@ -60,7 +60,7 @@ const Page = () => {
                         <Image src="/logo-sinfondo.png" alt="logo" width={100} height={100} />
                         <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">EntreTiempo</h1>
                     </div>
-                    <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-900">
+                    <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-700">
                         <form className="space-y-4" onSubmit={handleSubmit}>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
