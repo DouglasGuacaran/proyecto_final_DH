@@ -10,6 +10,7 @@ const Gallery = () => {
   const { canchas } = useCanchas();
   const [selectedSports, setSelectedSports] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [shuffledCanchas, setShuffledCanchas] = useState([]);
   const cardsPerPage = 10;
 
   const sports = {
@@ -17,6 +18,11 @@ const Gallery = () => {
     tenis: 'Tenis',
     paddel: 'Paddel',
   };
+
+  useEffect(() => {
+    const shuffled = [...canchas].sort(() => 0.5 - Math.random());
+    setShuffledCanchas(shuffled);
+  }, [canchas]);
 
   const handleToggle = (sport) => {
     setSelectedSports((prevSelected) => {
@@ -30,20 +36,16 @@ const Gallery = () => {
 
   const filteredCanchas =
     selectedSports.length === 0
-      ? canchas
-      : canchas.filter((cancha) =>
+      ? shuffledCanchas
+      : shuffledCanchas.filter((cancha) =>
           selectedSports.includes(cancha.Disciplina?.Nombre)
         );
 
-  const shuffledCanchas = filteredCanchas
-    .sort(() => 0.5 - Math.random())
-    .slice(0, filteredCanchas.length);
-
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCanchas = shuffledCanchas.slice(indexOfFirstCard, indexOfLastCard);
+  const currentCanchas = filteredCanchas.slice(indexOfFirstCard, indexOfLastCard);
 
-  const totalPages = Math.ceil(shuffledCanchas.length / cardsPerPage);
+  const totalPages = Math.ceil(filteredCanchas.length / cardsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -112,7 +114,7 @@ const Gallery = () => {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-10 mx-auto px-10">
-        {currentCanchas.map((cancha, index) => (
+        {currentCanchas.map((cancha) => (
           <Card key={cancha.id} dataCancha={cancha} />
         ))}
       </div>
