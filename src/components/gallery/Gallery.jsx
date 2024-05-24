@@ -119,21 +119,25 @@ const Gallery = () => {
         ))}
       </div>
       <div className="flex justify-center mt-10">
-        <nav>
-          <ul className="flex pl-0 list-none rounded my-2">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <li key={index + 1}>
-                <button
-                  onClick={() => paginate(index + 1)}
-                  className={`px-3 py-2 ml-0 leading-tight ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-300'} rounded-l-lg hover:bg-gray-200 hover:text-gray-700`}
-                >
-                  {index + 1}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
+      <nav>
+        <ul className="flex pl-0 list-none rounded my-2 space-x-1">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <li key={index + 1}>
+              <button
+                onClick={() => paginate(index + 1)}
+                className={`px-3 py-2 ml-0 leading-tight ${
+                  theme === 'dark' ? 
+                  'bg-gray-800 text-white border-gray-700 hover:bg-gray-600' : 
+                  'bg-white text-black border-gray-300 hover:bg-gray-200 hover:text-gray-700'
+                } rounded-lg`}
+              >
+                {index + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
     </section>
   );
 };

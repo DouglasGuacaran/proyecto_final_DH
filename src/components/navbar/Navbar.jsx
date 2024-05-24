@@ -1,7 +1,9 @@
 'use client';
-import Image from 'next/image';
-import Link from 'next/link';
+
 import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '../ui/button';
 import { Toggle } from "@/components/ui/toggle";
 import { useTheme } from '@/context/ThemeContext';
@@ -9,7 +11,14 @@ import { useTheme } from '@/context/ThemeContext';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user, supabase } = useAuth();
+
   const openMenu = () => setIsOpen(!isOpen);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  };
 
   function MoonIcon(props) {
     return (
@@ -27,7 +36,7 @@ export default function Navbar() {
       >
         <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
       </svg>
-    )
+    );
   }
 
   function SunIcon(props) {
@@ -119,6 +128,21 @@ export default function Navbar() {
               <Link href="/dashboard">
                 <Button variant="link" className='text-base'>Admin</Button>
               </Link>
+            </li>
+            <li>
+              {user ? (
+                <Button
+                  variant="link"
+                  className="text-base"
+                  onClick={handleLogout}
+                >
+                  Cerrar Sesión
+                </Button>
+              ) : (
+                <Link href="/login">
+                  <Button variant="link" className='text-base'>Iniciar Sesión</Button>
+                </Link>
+              )}
             </li>
             <li>
               <Button

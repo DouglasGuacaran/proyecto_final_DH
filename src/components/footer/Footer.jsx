@@ -27,18 +27,18 @@ export default function Footer() {
           </Link>
           <ul className={`flex flex-wrap items-center mb-6 text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} sm:mb-0`}>
             <li>
-              <Link href="/" className="hover:underline me-4 md:me-6">
-                Crear Cuenta
+              <Link href="#" className="hover:underline me-4 md:me-6">
+                <i className="fab fa-facebook"></i>
               </Link>
             </li>
             <li>
-              <Link href="/" className="hover:underline me-4 md:me-6">
-                Iniciar Sesión
+              <Link href="#" className="hover:underline me-4 md:me-6">
+                <i className="fab fa-instagram"></i>
               </Link>
             </li>
             <li>
-              <Link href="/dashboard" className="hover:underline me-4 md:me-6">
-                Admin
+              <Link href="#" className="hover:underline me-4 md:me-6">
+                <i className="fab fa-twitter"></i>
               </Link>
             </li>
           </ul>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from 'next/image';
-import Navbar from '@/components/navbar/navbar';
+import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { createClient } from '../../utils/supabase/client';
 import { redirect } from 'next/dist/server/api-utils';

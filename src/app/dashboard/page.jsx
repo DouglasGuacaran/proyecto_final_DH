@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select';
 import { useState } from 'react';
 import Footer from '@/components/footer/Footer';
-import Navbar from '@/components/navbar/navbar';
+import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/button';
 import { useCanchas } from '@/context/CanchasProvider';
 import { createClient } from '@/utils/supabase/client';

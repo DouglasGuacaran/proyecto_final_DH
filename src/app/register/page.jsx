@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from "next/link";
 import Image from 'next/image';
-import Navbar from '@/components/navbar/navbar';
+import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { createClient } from '../../utils/supabase/client'; // Ajusta la ruta según la ubicación de tu archivo
 import { Label } from "@/components/ui/label";
