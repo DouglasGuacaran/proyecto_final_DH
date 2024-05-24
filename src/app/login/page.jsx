@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { createClient } from '../../utils/supabase/client';
+import { redirect } from 'next/dist/server/api-utils';
 
 
 const supabase = createClient();
@@ -38,15 +39,18 @@ const Page = () => {
             } else {
                 console.log('Usuario autenticado:', data);
                 alert('Inicio de sesión exitoso!');
-
-                //Falta redirigir a pag inicio
+                
+                // Guardar el token en localStorage
+                localStorage.setItem('supabaseToken', data.session.access_token);
+                localStorage.setItem('userEmail', email);
+                //redireccionar a la página principal
+                window.location.href = '/';
             }
         } catch (error) {
             console.error('Error inesperado:', error);
             alert('Error inesperado: ' + error.message);
         }
-    };
-
+    }
     return (
         <>
             <Navbar />

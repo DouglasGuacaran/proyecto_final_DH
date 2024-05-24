@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from 'react';
 import Link from "next/link";
 import Image from 'next/image';
@@ -10,14 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const supabase = createClient();
-let nombreCompleto = '';
+
 const Page = () => {
     const [formData, setFormData] = useState({
-        fullname: "",
+        name: "",
+        lastName: "",
         email: "",
         phone: "",
-        password: ""
+        password: "",
+        password2: ""
     });
+    const [error, setError] = useState("");
 
     const handleChange = (e) => {
         setFormData({
@@ -28,8 +31,16 @@ const Page = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const { email, password, password2, name, lastName, phone } = formData;
+        if (!email || !password || !password2 || !name || !lastName || !phone) {
+            setError("Por favor, complete todos los campos");
+            return;
+        }
 
-        const { email, password, name, lastName, phone } = formData;
+        if (password !== password2) {
+            setError("Las contraseñas no coinciden");
+            return;
+        }
 
         try {
             // Registro en supabase
@@ -74,9 +85,6 @@ const Page = () => {
         }
     };
 
-
-
-
     return (
         <>
             <Navbar />
@@ -90,7 +98,7 @@ const Page = () => {
                         <form className="space-y-4" onSubmit={handleSubmit}>
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nombre</Label>
-                                <Input id="name" placeholder="Ingrese su nombre nombre" value={formData.name} onChange={handleChange} />
+                                <Input id="name" placeholder="Ingrese su nombre" value={formData.name} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName">Apellido</Label>
@@ -108,6 +116,11 @@ const Page = () => {
                                 <Label htmlFor="password">Contraseña</Label>
                                 <Input id="password" placeholder="Ingrese su contraseña" type="password" value={formData.password} onChange={handleChange} />
                             </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password2">Repetir Contraseña</Label>
+                                <Input id="password2" placeholder="Ingrese su contraseña" type="password" value={formData.password2} onChange={handleChange} />
+                            </div>
+                            {error && <p className="text-red-600">{error}</p>}
                             <Button className="w-full" type="submit">
                                 Registrarse
                             </Button>
@@ -115,7 +128,7 @@ const Page = () => {
                         <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
                             Tienes una cuenta?{" "}
                             <Link className="font-medium underline" href="../login">
-                                Inicia sesion
+                                Inicia sesión
                             </Link>
                         </div>
                     </div>

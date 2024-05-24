@@ -12,7 +12,7 @@ export default function Home() {
       <Hero />
       <Gallery />
     </main>
-     <Footer />
+    <Footer />
     </>
   );
 }
