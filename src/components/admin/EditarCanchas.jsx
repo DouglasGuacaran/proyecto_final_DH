@@ -14,6 +14,7 @@ import { useCanchas } from '@/context/CanchasProvider';
 import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
 import { useToast } from '@/components/ui/use-toast';
 import Image from "next/image";
 import { useTheme } from '@/context/ThemeContext';

@@ -14,22 +14,22 @@ function AdminPage() {
 const tabs = [
     {
         id: 'canchas',
-        label: 'Editar Canchas',
+        label: 'Canchas',
         content: <EditarCanchas />,
     },
     {
         id: 'usuarios',
-        label: 'Editar Usuarios',
+        label: 'Usuarios',
         content: <EditarUsuarios />,
     },
     {
         id: 'categorias',
-        label: 'Agregar Categoría Deportiva',
+        label: 'Categorías Deportivas',
         content: <EditarCategoriaDeportiva />,
     },
     {
         id: 'reservas',
-        label: 'Manejar Reservas',
+        label: 'Reservas',
         content: <EditarReservas />,
     },
     ];
