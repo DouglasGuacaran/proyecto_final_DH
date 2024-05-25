@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
@@ -12,6 +12,30 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, supabase } = useAuth();
+  const [userName, setUserName] = useState('');
+  const[rol, setRol] = useState('');
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('Usuario') // Ajusta el nombre de la tabla según tu esquema de base de datos
+          .select('Username, Rol') // O 'name' dependiendo del campo que quieras mostrar
+          .eq('uid', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user data:', error);
+        } else {
+          // console.log(data); 
+          setRol(data.Rol);
+          setUserName(data.Username.charAt(0).toUpperCase() + data.Username.slice(1) || '');
+        }
+      }
+    };
+
+    fetchUserName();
+  }, [user, supabase]); // Added 'supabase' as a dependency
 
   const openMenu = () => setIsOpen(!isOpen);
 
@@ -92,7 +116,7 @@ export default function Navbar() {
           aria-expanded={isOpen}
           onClick={openMenu}
         >
-          <span className="sr-only">Open main menu</span>
+          <span className="sr-only">Abrir menú principal</span>
           <svg
             className="w-5 h-5 text-black"
             aria-hidden="true"
@@ -114,36 +138,50 @@ export default function Navbar() {
           id="navbar-default"
         >
           <ul className={`font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-background`}>
+            {user ?(
+              <li>
+                <Button variant="link" className='text-base'>Bienvenido {userName}</Button>
+              </li>
+              ) : (
             <li>
               <Link href="/register">
                 <Button variant="link" className='text-base'>Crear Cuenta</Button>
               </Link>
             </li>
-            <li>
-              <Link href="/login">
-                <Button variant="link" className='text-base'>Iniciar Sesión</Button>
-              </Link>
-            </li>
-            <li>
-              <Link href="/dashboard">
-                <Button variant="link" className='text-base'>Admin</Button>
-              </Link>
-            </li>
-            <li>
-              {user ? (
-                <Button
-                  variant="link"
-                  className="text-base"
-                  onClick={handleLogout}
-                >
-                  Cerrar Sesión
-                </Button>
-              ) : (
+            )}
+            {user ? (
+              <>
+                <li>
+                  <Link href="/account">
+                    <Button variant="link" className='text-base'>Mi Cuenta</Button>
+                  </Link>
+                </li>
+                <li>
+                  <Button
+                    variant="link"
+                    className="text-base"
+                    onClick={handleLogout}
+                  >
+                    Cerrar Sesión
+                  </Button>
+                </li>
+              </>
+            ) : (
+              <li>
                 <Link href="/login">
                   <Button variant="link" className='text-base'>Iniciar Sesión</Button>
                 </Link>
-              )}
+              </li>
+            )}
+            {rol =='Admin' ? (
+            <li>
+              <Link href="/admin">
+                <Button variant="link" className='text-base'>Administración del Sitio</Button>
+              </Link>
             </li>
+            ) : (
+              null
+            )}
             <li>
               <Button
                 aria-label="Toggle dark mode"

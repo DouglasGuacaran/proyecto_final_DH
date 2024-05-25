@@ -393,7 +393,7 @@ export default function Page() {
         </div>
         <form
           onSubmit={handleSubmit}
-          className=" max-w-xl ml-10 flex flex-col gap-5"
+          className="max-w-xl ml-10 flex flex-col gap-5"
         >
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="Nombre">Nombre</Label>

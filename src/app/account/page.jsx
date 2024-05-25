@@ -19,7 +19,7 @@ export default function Page() {
     direccion: '',
     telefono: ''
   });
-  
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (user) {
@@ -27,7 +27,7 @@ export default function Page() {
         const { data, error } = await supabase
           .from('Usuario')
           .select('Nombre, Correo, DocumentoDeIdentificacion, Direccion, Telefono, Rol')
-          .eq('Correo', user.email)
+          .eq('uid', user.id)
           .single();
 
         if (error) {
@@ -62,13 +62,13 @@ export default function Page() {
     const { error } = await supabase
       .from('Usuario')
       .update({
-        Nombre: userData.Nombre,
-        Email: userData.Correo,
-        Documento: userData.DocumentoDeIdentificacion,
-        Direccion: userData.Direccion,
-        Telefono: userData.Telefono
+        Nombre: userData.nombre,
+        Correo: userData.email,
+        DocumentoDeIdentificacion: userData.documento,
+        Direccion: userData.direccion,
+        Telefono: userData.telefono
       })
-      .eq('Correo', userData.Correo);
+      .eq('uid', user.id);
 
     if (error) {
       console.error('Error updating user data:', error);
@@ -79,52 +79,52 @@ export default function Page() {
 
   return (
     <>
-    <main>
-    <Navbar />
-    <div className="flex flex-col items-center w-screen bg-gray-100 dark:bg-gray-900">
-      <div className="w-full flex flex-col items-center justify-center mt-20">
-        <div className="w-11/12 max-w-3xl p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <Image alt="User Avatar" src="/user-avatar.png" className="rounded-full" height={40} width={40} />
-              <div>
-                <h1 className="text-lg font-medium">{`${userData.nombre}`}</h1>
-                <p className="text-gray-500 dark:text-gray-400">{userData.Correo}</p>
+      <main>
+        <Navbar />
+        
+        <div className="flex flex-col items-center w-screen bg-gray-100 dark:bg-gray-900">
+          <div className="w-full flex flex-col items-center justify-center mt-20">
+            <div className="w-11/12 max-w-3xl p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <Image alt="User Avatar" src="/user-avatar.png" className="rounded-full" height={40} width={40} />
+                  <div>
+                    <h1 className="text-lg font-medium">{`${userData.nombre}`}</h1>
+                    <p className="text-gray-500 dark:text-gray-400">{userData.email}</p>
+                  </div>
+                </div>
               </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="w-full">
+                  <Label htmlFor="nombre">Nombre</Label>
+                  <Input id="nombre" name="nombre" type="text" value={userData.nombre} onChange={handleChange} disabled/>
+                </div>
+                <div className="w-full">
+                  <Label htmlFor="email">Correo electrónico</Label>
+                  <Input id="email" name="email" type="email" value={userData.email} readOnly />
+                </div>
+                <div className="w-full">
+                  <Label htmlFor="documento">Documento de identidad</Label>
+                  <Input id="documento" name="documento" type="text" value={userData.documento} onChange={handleChange} />
+                </div>
+                <div className="w-full">
+                  <Label htmlFor="direccion">Dirección</Label>
+                  <Input id="direccion" name="direccion" type="text" value={userData.direccion} onChange={handleChange} />
+                </div>
+                <div className="w-full">
+                  <Label htmlFor="telefono">Teléfono</Label>
+                  <Input id="telefono" name="telefono" type="text" value={userData.telefono} onChange={handleChange} />
+                </div>
+                <div className="flex justify-end space-x-2 mt-4">
+                  <Button variant="outline" type="reset">Cancelar</Button>
+                  <Button type="submit">Guardar cambios</Button>
+                </div>
+              </form>
             </div>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="w-full">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" name="nombre" type="text" value={userData.Nombre} onChange={handleChange} />
-            </div>
-            <div className="w-full">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" name="email" type="email" value={userData.Correo} readOnly />
-            </div>
-            <div className="w-full">
-              <Label htmlFor="documento">Documento de identidad</Label>
-              <Input id="documento" name="documento" type="text" value={userData.DocumentoDeIdentificacion} onChange={handleChange} />
-            </div>
-            <div className="w-full">
-              <Label htmlFor="direccion">Dirección</Label>
-              <Input id="direccion" name="direccion" type="text" value={userData.Direccion} onChange={handleChange} />
-            </div>
-            <div className="w-full">
-              <Label htmlFor="telefono">Teléfono</Label>
-              <Input id="telefono" name="telefono" type="tel" value={userData.Telefono} onChange={handleChange} />
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" type="reset">Cancelar</Button>
-              <Button type="submit">Guardar cambios</Button>
-            </div>
-          </form>
         </div>
-      </div>
-
-      </div>
       </main>
-    <Footer />
+      <Footer />
     </>
   );
 }
