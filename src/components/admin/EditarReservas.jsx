@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/toaster';
 import { useReservas } from '@/context/ReservasProvider';
+import { useCanchas } from '@/context/CanchasProvider';
+import { useUsuarios } from '@/context/UsuariosProvider';
 import { useTheme } from '@/context/ThemeContext';
 import {
     Select,
@@ -15,13 +17,16 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { createClient } from '@/utils/supabase/client';
-import Image from 'next/image';
+
+const supabase = createClient();
 
 export default function ManejarReservas() {
     const { theme } = useTheme();
     const { reservas, fetchReservas } = useReservas();
-    const [usuarios, setUsuarios] = useState([]);
-    const [canchas, setCanchas] = useState([]);
+    const { canchas } = useCanchas();
+    console.log(canchas);
+    const { usuarios } = useUsuarios();
+    console.log(usuarios);
     const [newReserva, setNewReserva] = useState({
         Cancha_id: '',
         Usuario_id: '',
@@ -33,38 +38,6 @@ export default function ManejarReservas() {
     const [supabaseDeleteError, setSupabaseDeleteError] = useState('');
     const [supabaseErrors, setSupabaseErrors] = useState('');
 
-    useEffect(() => {
-        fetchReservas();
-        fetchUsuarios();
-        fetchCanchas();
-    }, [fetchReservas]);
-
-    const fetchUsuarios = async () => {
-        const supabase = createClient();
-        const { data, error } = await supabase
-            .from('Usuario')
-            .select('id, Nombre');
-
-        if (error) {
-            console.error('Error al obtener los usuarios:', error);
-        } else {
-            setUsuarios(data);
-        }
-    };
-
-    const fetchCanchas = async () => {
-        const supabase = createClient();
-        const { data, error } = await supabase
-            .from('Cancha')
-            .select('id, Nombre');
-
-        if (error) {
-            console.error('Error al obtener las canchas:', error);
-        } else {
-            setCanchas(data);
-        }
-    };
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewReserva((prevState) => ({
@@ -73,7 +46,7 @@ export default function ManejarReservas() {
         }));
     };
 
-    const handleSelectChange = (name, value) => {
+    const handleSelectChange = ( value) => {
         setNewReserva((prevState) => ({
             ...prevState,
             [name]: value,
@@ -95,7 +68,6 @@ export default function ManejarReservas() {
             return;
         }
 
-        const supabase = createClient();
         const { error } = await supabase
             .from('Reserva')
             .insert([newReserva]);
@@ -115,7 +87,6 @@ export default function ManejarReservas() {
     };
 
     const handleDelete = async (id) => {
-        const supabase = createClient();
         const { error } = await supabase
             .from('Reserva')
             .delete()
@@ -182,8 +153,8 @@ export default function ManejarReservas() {
                         <tbody>
                             {reservas.map((reserva) => (
                                 <tr key={reserva.id} className={`border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                                    <td className="px-6 py-4 font-medium">{reserva.Cancha_id}</td>
-                                    <td className="px-6 py-4">{reserva.Usuario_id}</td>
+                                    <td className="px-6 py-4 font-medium">{canchas.find(cancha => cancha.id === reserva.Cancha_id)?.Nombre}</td>
+                                    <td className="px-6 py-4">{usuarios.find(usuario => usuario.id === reserva.Usuario_id)?.Nombre}</td>
                                     <td className="px-6 py-4">{reserva.Fecha_hora_inicio}</td>
                                     <td className="px-6 py-4">{reserva.Fecha_hora_fin}</td>
                                     <td className="px-6 py-4">{reserva.Estado}</td>
@@ -233,14 +204,16 @@ export default function ManejarReservas() {
                         <Select
                             name="Cancha_id"
                             value={newReserva.Cancha_id}
-                            onValueChange={(value) => handleSelectChange('Cancha_id', value)}
+                            onValueChange={handleSelectChange}
                         >
                             <SelectTrigger
                                 className={`${
                                     errors.Cancha_id ? 'border border-red-600' : ''
                                 }`}
                             >
-                                <SelectValue placeholder="Seleccione una cancha" />
+                                <SelectValue>
+                                    {newReserva.Cancha_id ? canchas.find((cancha) => cancha.id === newReserva.Cancha_id)?.Nombre : 'Seleccione una cancha'}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {canchas.map((cancha) => (
@@ -266,7 +239,9 @@ export default function ManejarReservas() {
                                     errors.Usuario_id ? 'border border-red-600' : ''
                                 }`}
                             >
-                                <SelectValue placeholder="Seleccione un usuario" />
+                                <SelectValue>
+                                    {newReserva.Usuario_id ? usuarios.find((usuario) => usuario.id === newReserva.Usuario_id)?.Nombre : 'Seleccione un usuario'}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {usuarios.map((usuario) => (

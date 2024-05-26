@@ -359,7 +359,7 @@ export default function Page() {
                                     <td className="px-6 py-4">{cancha.Tamanio}</td>
                                     <td className="px-6 py-4">{cancha.Precio_hora}</td>
                                     <td className="px-6 py-4">{cancha.Disciplina.Nombre}</td>
-                                    <td className="px-6 py-4 flex flex-wrap">
+                                    <td className="px-6 py-4">
                                         {cancha.Imagen_cancha.length > 0 && (
                                             cancha.Imagen_cancha.map((imagen, index) => (
                                                 <Image
@@ -373,7 +373,7 @@ export default function Page() {
                                             ))
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 flex space-x-2">
+                                    <td className="px-6 py-4 flex space-x-2 flex-wrap">
                                         <Button
                                             onClick={() => handleEdit(cancha.id)}
                                             size="icon"
