@@ -1,19 +1,28 @@
 'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Card from '../card/Card';
 import { Toggle } from '../ui/toggle';
 import { useCanchas } from '@/context/CanchasProvider';
+import { useTheme } from '@/context/ThemeContext';
 
 const Gallery = () => {
+  const { theme } = useTheme();
   const { canchas } = useCanchas();
   const [selectedSports, setSelectedSports] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [shuffledCanchas, setShuffledCanchas] = useState([]);
+  const cardsPerPage = 10;
 
   const sports = {
     futbol: 'Fútbol',
     tenis: 'Tenis',
     paddel: 'Paddel',
   };
+
+  useEffect(() => {
+    const shuffled = [...canchas].sort(() => 0.5 - Math.random());
+    setShuffledCanchas(shuffled);
+  }, [canchas]);
 
   const handleToggle = (sport) => {
     setSelectedSports((prevSelected) => {
@@ -27,13 +36,21 @@ const Gallery = () => {
 
   const filteredCanchas =
     selectedSports.length === 0
-      ? canchas
-      : canchas.filter((cancha) =>
+      ? shuffledCanchas
+      : shuffledCanchas.filter((cancha) =>
           selectedSports.includes(cancha.Disciplina?.Nombre)
         );
 
+  const indexOfLastCard = currentPage * cardsPerPage;
+  const indexOfFirstCard = indexOfLastCard - cardsPerPage;
+  const currentCanchas = filteredCanchas.slice(indexOfFirstCard, indexOfLastCard);
+
+  const totalPages = Math.ceil(filteredCanchas.length / cardsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
-    <section className="flex flex-col my-10">
+    <section className={`flex flex-col my-10 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       <div className="flex flex-col gap-3 justify-center items-center mb-10">
         <h2 className="font-medium text-lg">Categoría</h2>
         <div className="flex gap-3">
@@ -43,10 +60,9 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-ball-football w-7 h-7"
+              className={`icon icon-tabler icon-tabler-ball-football w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
-              stroke="#000000"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -63,10 +79,9 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-ball-tennis w-7 h-7"
+              className={`icon icon-tabler icon-tabler-ball-tennis w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
-              stroke="#000000"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -83,10 +98,9 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-paddle w-7 h-7"
+              className={`icon icon-tabler icon-tabler-paddle w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
-              stroke="#000000"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -99,11 +113,31 @@ const Gallery = () => {
           </Toggle>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto gap-10 px-10">
-        {filteredCanchas.map((cancha) => (
+      <div className="grid grid-cols-2 gap-10 mx-auto px-10">
+        {currentCanchas.map((cancha) => (
           <Card key={cancha.id} dataCancha={cancha} />
         ))}
       </div>
+      <div className="flex justify-center mt-10">
+      <nav>
+        <ul className="flex pl-0 list-none rounded my-2 space-x-1">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <li key={index + 1}>
+              <button
+                onClick={() => paginate(index + 1)}
+                className={`px-3 py-2 ml-0 leading-tight ${
+                  theme === 'dark' ? 
+                  'bg-gray-800 text-white border-gray-700 hover:bg-gray-600' : 
+                  'bg-white text-black border-gray-300 hover:bg-gray-200 hover:text-gray-700'
+                } rounded-lg`}
+              >
+                {index + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
     </section>
   );
 };

@@ -16,11 +16,14 @@ import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import Image from "next/image";
+import { useTheme } from '@/context/ThemeContext';
 
 // Inicializar cliente de Supabase
 const supabase = createClient();
 
-export default function page() {
+export default function Page() {
+  const { theme } = useTheme();
   const [file, setFile] = useState(null);
   const { canchas, fetchCanchas } = useCanchas();
   const [newCancha, setNewCancha] = useState({
@@ -88,22 +91,20 @@ export default function page() {
     };
 
     // validaciones generales
-    if (newCancha.Nombre == '') {
+    if (newCancha.Nombre === '') {
       newErrors.Nombre = 'Por favor, ingrese un nombre para la cancha.';
     }
-    if (newCancha.Superficie == '') {
-      newErrors.Superficie =
-        'Por favor, ingrese una superficie para la cancha.';
+    if (newCancha.Superficie === '') {
+      newErrors.Superficie = 'Por favor, ingrese una superficie para la cancha.';
     }
-    if (newCancha.Tamanio == '') {
+    if (newCancha.Tamanio === '') {
       newErrors.Tamanio = 'Por favor, ingrese un tamaño para la cancha.';
     }
-    if (newCancha.Precio_hora == '') {
+    if (newCancha.Precio_hora === '') {
       newErrors.Precio_hora = 'Por favor, ingrese un precio para la cancha.';
     }
-    if (newCancha.Disciplina_id == '') {
-      newErrors.Disciplina_id =
-        'Por favor, seleccione una disciplina para la cancha.';
+    if (newCancha.Disciplina_id === '') {
+      newErrors.Disciplina_id = 'Por favor, seleccione una disciplina para la cancha.';
     }
 
     // Validación de la imagen
@@ -184,8 +185,7 @@ export default function page() {
     } = supabase.storage.from('imagenes_canchas').getPublicUrl(fileName);
 
     if (publicUrlError) {
-      newSupabaseErrors.publicUrlError =
-        'Error al obtener la URL pública de la imagen';
+      newSupabaseErrors.publicUrlError = 'Error al obtener la URL pública de la imagen';
       setSupabaseErrors(newSupabaseErrors);
       return;
     }
@@ -212,7 +212,7 @@ export default function page() {
       uploadError: '',
       publicUrlError: '',
       imageError: '',
-    })
+    });
     setNewCancha({
       Nombre: '',
       Superficie: '',
@@ -249,9 +249,7 @@ export default function page() {
       const deleteResults = await Promise.all(deletePromises);
       const storageErrors = deleteResults.filter((result) => result.error);
       if (storageErrors.length > 0) {
-        setSupabaseDeleteError(
-          'Error al eliminar las imágenes del almacenamiento.'
-        );
+        setSupabaseDeleteError('Error al eliminar las imágenes del almacenamiento.');
         return;
       }
 
@@ -285,7 +283,7 @@ export default function page() {
   return (
     <>
       <Navbar />
-      <div className="block md:hidden min-h-screen flex items-center justify-center flex-col">
+      <div className={`md:hidden min-h-screen flex items-center justify-center flex-col ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -302,17 +300,17 @@ export default function page() {
         </svg>
 
         <h2 className="text-center">
-          El panel de administrador esta disponible únicamente en versión
+          El panel de administrador está disponible únicamente en versión
           desktop
         </h2>
       </div>
-      <main className="hidden md:block text-sm sm:text-base md:text-lg lg:text-xl min-h-screen p-4 mt-32 flex flex-col">
+      <main className={`hidden md:block text-sm sm:text-base md:text-lg lg:text-xl min-h-screen p-4 mt-32 flex-col ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}>
         <h1 className="text-2xl font-semibold ml-6 antialiased">
           Admin Dashboard
         </h1>
         <div className="mt-10 px-6">
-          <table className="w-full text-sm text-left text-black">
-            <thead className="text-sm text-gray-700 uppercase bg-[#F4F4F4]">
+          <table className="w-full text-sm text-left">
+            <thead className={`text-sm uppercase ${theme === 'dark' ? 'text-gray-400 bg-gray-700' : 'text-gray-700 bg-[#F4F4F4]'}`}>
               <tr>
                 <th scope="col" className="px-6 py-3 font-semibold">
                   Nombre
@@ -342,7 +340,7 @@ export default function page() {
             </thead>
             <tbody>
               {canchas.map((cancha) => (
-                <tr key={cancha.id} className="bg-white border-b">
+                <tr key={cancha.id} className={`border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                   <td className="px-6 py-4 font-medium">{cancha.Nombre}</td>
                   <td className="px-6 py-4">{cancha.Superficie}</td>
                   <td className="px-6 py-4">{cancha.Tamanio}</td>
@@ -350,10 +348,12 @@ export default function page() {
                   <td className="px-6 py-4">{cancha.Disciplina.Nombre}</td>
                   <td className="px-6 py-4">
                     {cancha.Imagen_cancha.length > 0 && (
-                      <img
+                      <Image
                         src={cancha.Imagen_cancha[0].Url_img}
                         alt="Imagen de la Cancha"
-                        className="w-20 h-20 object-cover rounded-md"
+                        width={200}
+                        height={200}
+                        className="object-cover rounded-md"
                       />
                     )}
                   </td>
@@ -361,13 +361,13 @@ export default function page() {
                     <Button
                       onClick={() => handleDelete(cancha.id)}
                       size="icon"
-                      className="border border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white"
+                      className={`border ${theme === 'dark' ? 'border-red-600 text-red-600 bg-gray-800 hover:bg-red-600 hover:text-white' : 'border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white'}`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        strokeWidth={1.5}
+                        strokeWidth="1.5"
                         stroke="currentColor"
                         className="w-5 h-5"
                       >
@@ -396,7 +396,7 @@ export default function page() {
         </div>
         <form
           onSubmit={handleSubmit}
-          className=" max-w-xl ml-10 flex flex-col gap-5"
+          className="max-w-xl ml-10 flex flex-col gap-5"
         >
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="Nombre">Nombre</Label>
