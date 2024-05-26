@@ -37,7 +37,7 @@ export default function ManejarReservas() {
         fetchReservas();
         fetchUsuarios();
         fetchCanchas();
-    }, []);
+    }, [fetchReservas]);
 
     const fetchUsuarios = async () => {
         const supabase = createClient();
