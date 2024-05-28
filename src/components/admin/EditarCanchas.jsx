@@ -31,6 +31,7 @@ export default function Page() {
         Superficie: '',
         Tamanio: '',
         Precio_hora: '',
+        Caracteristicas: '',
         Disciplina_id: '',
     });
     const [errors, setErrors] = useState({
@@ -38,6 +39,7 @@ export default function Page() {
         Superficie: '',
         Tamanio: '',
         Precio_hora: '',
+        Caracteristicas: '',
         Disciplina_id: '',
         Imagen: '',
     });
@@ -84,6 +86,8 @@ export default function Page() {
         }));
     };
 
+
+
     // Función para agregar una nueva cancha
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -93,6 +97,7 @@ export default function Page() {
             Superficie: '',
             Tamanio: '',
             Precio_hora: '',
+            Caracteristicas: '',
             Disciplina_id: '',
             Imagen: '',
         };
@@ -110,6 +115,9 @@ export default function Page() {
         if (newCancha.Precio_hora === '') {
             newErrors.Precio_hora = 'Por favor, ingrese un precio para la cancha.';
         }
+        if (newCancha.Caracteristicas === '') {
+            newErrors.Caracteristicas = 'Por favor, ingrese al menos una característica de la cancha.';
+        }
         if (newCancha.Disciplina_id === '') {
             newErrors.Disciplina_id = 'Por favor, seleccione una disciplina para la cancha.';
         }
@@ -124,6 +132,7 @@ export default function Page() {
             newErrors.Superficie ||
             newErrors.Tamanio ||
             newErrors.Precio_hora ||
+            newErrors.Caracteristicas ||
             newErrors.Disciplina_id ||
             newErrors.Imagen
         ) {
@@ -136,6 +145,7 @@ export default function Page() {
             Superficie: '',
             Tamanio: '',
             Precio_hora: '',
+            Caracteristicas: '',
             Disciplina_id: '',
             Imagen: '',
         });
@@ -230,6 +240,7 @@ export default function Page() {
             Superficie: '',
             Tamanio: '',
             Precio_hora: '',
+            Caracteristicas: '',
             Disciplina_id: '',
         });
         setFiles([]);
@@ -341,6 +352,9 @@ export default function Page() {
                                     Precio de la hora
                                 </th>
                                 <th scope="col" className="px-6 py-3 font-semibold">
+                                    Características
+                                </th>
+                                <th scope="col" className="px-6 py-3 font-semibold">
                                     Disciplina
                                 </th>
                                 <th scope="col" className="px-6 py-3 font-semibold">
@@ -358,6 +372,29 @@ export default function Page() {
                                     <td className="px-6 py-4">{cancha.Superficie}</td>
                                     <td className="px-6 py-4">{cancha.Tamanio}</td>
                                     <td className="px-6 py-4">{cancha.Precio_hora}</td>
+                                        <td className="px-6 py-4">
+                                        <div className='flex flex-col items-center justify-center'>
+                                        <Button
+                                            onClick={() => handleEdit(cancha.id)}
+                                            size="icon"
+                                            className={`border ${theme === 'dark' ? 'border-blue-600 text-blue-600 bg-gray-800 hover:bg-blue-600 hover:text-white' : 'border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white'}`}
+                                            >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="w-5 h-5"
+                                                >
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                            </svg>
+                                        </Button>
+                                        </div>
+                                        </td>
                                     <td className="px-6 py-4">{cancha.Disciplina.Nombre}</td>
                                     <td className="px-6 py-4">
                                         {cancha.Imagen_cancha.length > 0 && (
@@ -373,12 +410,13 @@ export default function Page() {
                                             ))
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 flex space-x-2 flex-wrap">
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-row items-center justify-center">
                                         <Button
                                             onClick={() => handleEdit(cancha.id)}
                                             size="icon"
                                             className={`border ${theme === 'dark' ? 'border-blue-600 text-blue-600 bg-gray-800 hover:bg-blue-600 hover:text-white' : 'border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white'}`}
-                                        >
+                                            >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
@@ -386,19 +424,19 @@ export default function Page() {
                                                 strokeWidth="1.5"
                                                 stroke="currentColor"
                                                 className="w-5 h-5"
-                                            >
+                                                >
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
                                                     d="M15.232 6.1l-1.232 1.232 4.768 4.768 1.232-1.232a2.5 2.5 0 0 0 0-3.536L18.768 6.1a2.5 2.5 0 0 0-3.536 0zm-4.768 6.536L9.232 16.1 4.768 11.636 8.768 7.636l2.5 2.5L8.768 11.636 9.232 16.1z"
-                                                />
+                                                    />
                                             </svg>
                                         </Button>
                                         <Button
                                             onClick={() => handleDelete(cancha.id)}
                                             size="icon"
                                             className={`border ${theme === 'dark' ? 'border-red-600 text-red-600 bg-gray-800 hover:bg-red-600 hover:text-white' : 'border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white'}`}
-                                        >
+                                            >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
@@ -406,14 +444,15 @@ export default function Page() {
                                                 strokeWidth="1.5"
                                                 stroke="currentColor"
                                                 className="w-5 h-5"
-                                            >
+                                                >
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
                                                     d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                />
+                                                    />
                                             </svg>
                                         </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -491,6 +530,21 @@ export default function Page() {
                             <span className="text-xs text-red-600 mt-1 ml-2">
                                 {errors.Precio_hora}
                             </span>
+                        )}
+                    </div>
+                    <div className="flex flex-col space-y-1.5">
+                        <Label htmlFor="Caracteristicas">Caracteristicas</Label>
+                        <Input
+                        type="text"
+                        name="Caracteristicas"
+                        value={newCancha.Caracteristicas}
+                        onChange={handleInputChange}
+                        className={`${errors.Caracteristicas ? 'border border-red-600' : ''}`}
+                        />
+                        {errors.Caracteristicas && (
+                        <span className="text-xs text-red-600 mt-1 ml-2">
+                            {errors.Caracteristicas}
+                        </span>
                         )}
                     </div>
                     <div className="flex flex-col space-y-1.5">

@@ -28,6 +28,7 @@ export default function EditarCancha() {
         Superficie: '',
         Tamanio: '',
         Precio_hora: '',
+        Caracteristicas: '',
         Disciplina_id: '',
         Imagen: '',
     });
@@ -50,6 +51,7 @@ export default function EditarCancha() {
             console.error('Error fetching cancha:', error);
         } else {
             // Asegúrate de que Imagen_cancha siempre sea un array
+            console.log(data); 
             if (!data.Imagen_cancha) {
                 data.Imagen_cancha = [];
             }
@@ -95,6 +97,7 @@ export default function EditarCancha() {
             Superficie: '',
             Tamanio: '',
             Precio_hora: '',
+            Caracteristicas: '',
             Disciplina_id: '',
             Imagen: '',
         };
@@ -115,6 +118,7 @@ export default function EditarCancha() {
             Superficie: '',
             Tamanio: '',
             Precio_hora: '',
+            Caracteristicas: '',
             Disciplina_id: '',
             Imagen: '',
         });
@@ -182,6 +186,8 @@ export default function EditarCancha() {
                         Editar Cancha
                     </h1>
                     <div className="mt-10 px-6">
+                    <Button onClick={() => window.history.back()}>Volver a la edición</Button>
+                        
                         <form
                             onSubmit={handleUpdate}
                             className="max-w-xl ml-10 flex flex-col gap-5"
@@ -242,6 +248,32 @@ export default function EditarCancha() {
                                 {errors.Precio_hora && (
                                     <span className="text-xs text-red-600 mt-1 ml-2">
                                         {errors.Precio_hora}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col space-y-1.5">
+                                <Label htmlFor="Caracteristicas">Caracteristicas</Label>
+                                <Select
+                                    name="Disciplina_id"
+                                    value={cancha.Caracteristicas}
+                                    onValueChange={handleSelectChange}
+                                >
+                                    <SelectTrigger
+                                        className={`${
+                                            errors.Caracteristicas ? 'border border-red-600' : ''
+                                        }`}
+                                    >
+                                        <SelectValue placeholder="Seleccione una disciplina" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {cancha.Caracteristicas.map((caracteristica) => (
+                                            <SelectItem key={caracteristica} value={caracteristica}>{caracteristica}</SelectItem>
+                                        ))                                        }
+                                    </SelectContent>
+                                </Select>
+                                {errors.Caracteristicas && (
+                                    <span className="text-xs text-red-600 mt-1 ml-2">
+                                        {errors.Caracteristicas}
                                     </span>
                                 )}
                             </div>

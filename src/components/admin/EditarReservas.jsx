@@ -24,9 +24,7 @@ export default function ManejarReservas() {
     const { theme } = useTheme();
     const { reservas, fetchReservas } = useReservas();
     const { canchas } = useCanchas();
-    console.log(canchas);
     const { usuarios } = useUsuarios();
-    console.log(usuarios);
     const [newReserva, setNewReserva] = useState({
         Cancha_id: '',
         Usuario_id: '',
@@ -145,6 +143,7 @@ export default function ManejarReservas() {
                                 <th scope="col" className="px-6 py-3 font-semibold">
                                     Estado
                                 </th>
+                                /
                                 <th scope="col" className="px-6 py-3 font-semibold">
                                     Acciones
                                 </th>
