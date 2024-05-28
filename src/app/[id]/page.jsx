@@ -10,7 +10,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 export default function Page() {
   const { id } = useParams();
@@ -95,18 +95,16 @@ export default function Page() {
               </tr>
             </thead>
             <tbody>
-              {Caracteristicas && Object.keys(Caracteristicas).map((key) => (
-                <tr key={key}>
-                  <td className="border px-4 py-2">{key}</td>
-                  <td className="border px-4 py-2 text-center">
-                    {Caracteristicas[key] === 'True' ? (
+              {Caracteristicas && Object.keys(Caracteristicas)
+                .filter((key) => Caracteristicas[key] === 'True')
+                .map((key) => (
+                  <tr key={key}>
+                    <td className="border px-4 py-2">{key}</td>
+                    <td className="border px-4 py-2 text-center">
                       <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
-                    ) : (
-                      <FontAwesomeIcon icon={faTimesCircle} className="text-red-500" />
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
 
