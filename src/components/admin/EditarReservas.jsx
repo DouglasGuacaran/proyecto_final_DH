@@ -46,17 +46,17 @@ export default function ManejarReservas() {
             [name]: value,
         }));
     };
-<<<<<<< HEAD
+
     const handleSelectChange = (event) => {
         setNewReserva({ Cancha_id: event.target.value });
-      };
+    };
     // const handleSelectChange = (name,value) => {
     //     setNewReserva((prevState) => ({
     //         ...prevState,
     //         [name]: value,
     //     }));
     // };
-=======
+
 
     const handleSelectCanchaChange = (value) => {
         setNewReserva((prevState) => ({
@@ -64,7 +64,7 @@ export default function ManejarReservas() {
             Cancha_id: value,
             Nombre: canchas.find(cancha => cancha.id === value)?.Nombre,
         }));
-        console.log(Nombre);
+
     };
 
     const handleSelectUsuarioChange = (value) => {
@@ -73,7 +73,7 @@ export default function ManejarReservas() {
             Usuario_id: value,
         }));
     };
->>>>>>> 7dbf549f45b13aeb9ef5cd9798610fb3e13130e4
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
