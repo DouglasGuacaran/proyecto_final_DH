@@ -16,13 +16,11 @@ export const useUsuarios = () => {
         const supabase = createClient();
         const { data: usuarios, error } = await supabase
         .from('Usuario')
-        .select('Nombre, Username, Correo, DocumentoDeIdentificacion, Direccion, Telefono, Rol');
-
+        .select('id, Nombre, Username, Correo, DocumentoDeIdentificacion, Direccion, Telefono, Rol');
         if (error) {
-        console.error('Error al obtener los usuarios:', error);
-        return;
+            console.error('Error al obtener los usuarios:', error);
+            return;
         }
-
         setUsuarios(usuarios);
     }
 

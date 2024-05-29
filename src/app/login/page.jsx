@@ -8,8 +8,6 @@ import Image from 'next/image';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { createClient } from '../../utils/supabase/client';
-import { redirect } from 'next/dist/server/api-utils';
-
 
 const supabase = createClient();
 
