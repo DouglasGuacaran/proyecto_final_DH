@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import Image from "next/image";
+import { redirect } from 'next/navigation';
 
 // Inicializar cliente de Supabase
 const supabase = createClient();
@@ -23,6 +24,7 @@ export default function EditarCancha() {
     const [id, setId] = useState(null);
     const [cancha, setCancha] = useState(null);
     const [file, setFile] = useState(null);
+
     const [errors, setErrors] = useState({
         Nombre: '',
         Superficie: '',
@@ -105,6 +107,7 @@ export default function EditarCancha() {
         if (cancha.Nombre === '') newErrors.Nombre = 'Por favor, ingrese el nombre.';
         if (cancha.Superficie === '') newErrors.Superficie = 'Por favor, ingrese la superficie.';
         if (cancha.Tamanio === '') newErrors.Tamanio = 'Por favor, ingrese el tamaño.';
+        if (cancha.Caracteristicas === '') newErrors.Precio_hora = 'Por favor, ingrese las características.';
         if (cancha.Precio_hora === '') newErrors.Precio_hora = 'Por favor, ingrese el precio por hora.';
         if (cancha.Disciplina_id === '') newErrors.Disciplina_id = 'Por favor, seleccione una disciplina.';
 
@@ -186,7 +189,7 @@ export default function EditarCancha() {
                         Editar Cancha
                     </h1>
                     <div className="mt-10 px-6">
-                    <Button onClick={() => window.history.back()}>Volver a la edición</Button>
+                    <Button onClick={() => redirect('/admin')}>Volver a la edición</Button>
                         
                         <form
                             onSubmit={handleUpdate}
@@ -258,17 +261,21 @@ export default function EditarCancha() {
                                     value={cancha.Caracteristicas}
                                     onValueChange={handleSelectChange}
                                 >
-                                    <SelectTrigger
+                                    <SelectTrigger  
                                         className={`${
                                             errors.Caracteristicas ? 'border border-red-600' : ''
                                         }`}
                                     >
-                                        <SelectValue placeholder="Seleccione una disciplina" />
+                                        <SelectValue>
+                                            {cancha.Caracteristicas ? cancha.Caracteristicas.join(', '): 'Seleccione una característica'}
+                                        </SelectValue> 
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {cancha.Caracteristicas.map((caracteristica) => (
-                                            <SelectItem key={caracteristica} value={caracteristica}>{caracteristica}</SelectItem>
-                                        ))                                        }
+                                    {cancha.Caracteristicas.map((car) => (
+                                    <SelectItem key={car} value={car}>
+                                        {car} 
+                                    </SelectItem>
+                                    ))}
                                     </SelectContent>
                                 </Select>
                                 {errors.Caracteristicas && (

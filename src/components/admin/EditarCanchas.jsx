@@ -26,6 +26,7 @@ export default function Page() {
     const [files, setFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
     const { canchas, fetchCanchas } = useCanchas();
+    console.log(canchas);
     const [newCancha, setNewCancha] = useState({
         Nombre: '',
         Superficie: '',
@@ -79,14 +80,13 @@ export default function Page() {
     };
 
     // Manejar cambio en el select
-    const handleSelectChange = (value) => {
+    const handleSelectChange = (name,value) => {
+        console.log(value);
         setNewCancha((prevState) => ({
             ...prevState,
-            Disciplina_id: value,
+            name: value,
         }));
     };
-
-
 
     // Función para agregar una nueva cancha
     const handleSubmit = async (e) => {

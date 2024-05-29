@@ -43,13 +43,15 @@ export default function ManejarReservas() {
             [name]: value,
         }));
     };
-
-    const handleSelectChange = ( value) => {
-        setNewReserva((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
+    const handleSelectChange = (event) => {
+        setNewReserva({ Cancha_id: event.target.value });
+      };
+    // const handleSelectChange = (name,value) => {
+    //     setNewReserva((prevState) => ({
+    //         ...prevState,
+    //         [name]: value,
+    //     }));
+    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -216,7 +218,7 @@ export default function ManejarReservas() {
                             </SelectTrigger>
                             <SelectContent>
                                 {canchas.map((cancha) => (
-                                    <SelectItem key={cancha.id} value={cancha.id}>{cancha.Nombre}</SelectItem>
+                                    <SelectItem key={cancha.id.key} value={cancha.id}>{cancha.Nombre}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
