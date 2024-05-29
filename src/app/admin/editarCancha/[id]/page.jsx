@@ -57,6 +57,7 @@ export default function EditarCancha() {
             if (!data.Imagen_cancha) {
                 data.Imagen_cancha = [];
             }
+            console.log(data);
             setCancha(data);
         }
     }, []);
@@ -256,26 +257,28 @@ export default function EditarCancha() {
                             </div>
                             <div className="flex flex-col space-y-1.5">
                                 <Label htmlFor="Caracteristicas">Caracteristicas</Label>
+
                                 <Select
                                     name="Disciplina_id"
                                     value={cancha.Caracteristicas}
                                     onValueChange={handleSelectChange}
                                 >
                                     <SelectTrigger  
+
                                         className={`${
-                                            errors.Caracteristicas ? 'border border-red-600' : ''
+                                            errors.Caracteristicas ? 'border border-red-600' : 'w-[280px] md:w-[600px] lg:w-[580px]'
                                         }`}
                                     >
-                                        <SelectValue>
-                                            {cancha.Caracteristicas ? cancha.Caracteristicas.join(', '): 'Seleccione una característica'}
-                                        </SelectValue> 
+                                    <SelectValue>
+                                        {cancha.Caracteristicas ? cancha.Caracteristicas.join(', '): 'Seleccione una característica'}
+                                    </SelectValue> 
                                     </SelectTrigger>
                                     <SelectContent>
                                     {cancha.Caracteristicas.map((car) => (
-                                    <SelectItem key={car} value={car}>
+                                        <SelectItem key={car} value={car}>
                                         {car} 
                                     </SelectItem>
-                                    ))}
+                                    ))} 
                                     </SelectContent>
                                 </Select>
                                 {errors.Caracteristicas && (
@@ -286,14 +289,10 @@ export default function EditarCancha() {
                             </div>
                             <div className="flex flex-col space-y-1.5">
                                 <Label htmlFor="Disciplina_id">Disciplina</Label>
-                                <Select
-                                    name="Disciplina_id"
-                                    value={cancha.Disciplina_id}
-                                    onValueChange={handleSelectChange}
-                                >
+                                <Select>
                                     <SelectTrigger
                                         className={`${
-                                            errors.Disciplina_id ? 'border border-red-600' : ''
+                                            errors.Disciplina_id ? 'border border-red-600' : 'w-[580px] md:w-[600px] lg:w-[580px]'
                                         }`}
                                     >
                                         <SelectValue placeholder="Seleccione una disciplina" />

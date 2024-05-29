@@ -15,7 +15,7 @@ export const useReservas = () => {
         const supabase = createClient();
         const { data: reservas, error } = await supabase
         .from('Reserva')
-        .select('Usuario_id, Cancha_id, Fecha_hora_inicio, Fecha_hora_fin, Estado');
+        .select('id, Usuario_id, Cancha_id, Fecha_hora_inicio, Fecha_hora_fin, Estado');
 
         if (error) {
         console.error('Error al obtener las reservas:', error);

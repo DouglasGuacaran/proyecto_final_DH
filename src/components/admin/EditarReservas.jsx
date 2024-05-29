@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,9 @@ export default function ManejarReservas() {
     const [errors, setErrors] = useState({});
     const [supabaseDeleteError, setSupabaseDeleteError] = useState('');
     const [supabaseErrors, setSupabaseErrors] = useState('');
+    
+    const nombresCanchas = canchas.find(cancha => cancha.id === newReserva.Cancha_id)?.Nombre;
+    console.log(nombresCanchas);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -43,6 +46,7 @@ export default function ManejarReservas() {
             [name]: value,
         }));
     };
+<<<<<<< HEAD
     const handleSelectChange = (event) => {
         setNewReserva({ Cancha_id: event.target.value });
       };
@@ -52,6 +56,24 @@ export default function ManejarReservas() {
     //         [name]: value,
     //     }));
     // };
+=======
+
+    const handleSelectCanchaChange = (value) => {
+        setNewReserva((prevState) => ({
+            ...prevState,
+            Cancha_id: value,
+            Nombre: canchas.find(cancha => cancha.id === value)?.Nombre,
+        }));
+        console.log(Nombre);
+    };
+
+    const handleSelectUsuarioChange = (value) => {
+        setNewReserva((prevState) => ({
+            ...prevState,
+            Usuario_id: value,
+        }));
+    };
+>>>>>>> 7dbf549f45b13aeb9ef5cd9798610fb3e13130e4
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -67,6 +89,8 @@ export default function ManejarReservas() {
             setErrors(newErrors);
             return;
         }
+
+        
 
         const { error } = await supabase
             .from('Reserva')
@@ -145,7 +169,6 @@ export default function ManejarReservas() {
                                 <th scope="col" className="px-6 py-3 font-semibold">
                                     Estado
                                 </th>
-                                /
                                 <th scope="col" className="px-6 py-3 font-semibold">
                                     Acciones
                                 </th>
@@ -154,6 +177,7 @@ export default function ManejarReservas() {
                         <tbody>
                             {reservas.map((reserva) => (
                                 <tr key={reserva.id} className={`border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                    
                                     <td className="px-6 py-4 font-medium">{canchas.find(cancha => cancha.id === reserva.Cancha_id)?.Nombre}</td>
                                     <td className="px-6 py-4">{usuarios.find(usuario => usuario.id === reserva.Usuario_id)?.Nombre}</td>
                                     <td className="px-6 py-4">{reserva.Fecha_hora_inicio}</td>
@@ -203,18 +227,14 @@ export default function ManejarReservas() {
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="Cancha_id">Cancha</Label>
                         <Select
-                            name="Cancha_id"
+                            name='Cancha_id'
                             value={newReserva.Cancha_id}
-                            onValueChange={handleSelectChange}
+                            onValueChange={handleSelectCanchaChange}
                         >
-                            <SelectTrigger
-                                className={`${
-                                    errors.Cancha_id ? 'border border-red-600' : ''
-                                }`}
-                            >
-                                <SelectValue>
-                                    {newReserva.Cancha_id ? canchas.find((cancha) => cancha.id === newReserva.Cancha_id)?.Nombre : 'Seleccione una cancha'}
-                                </SelectValue>
+                            <SelectTrigger className={`${errors.Cancha_id ? 'border border-red-600' : 'w-full'}`}>
+                                <SelectValue placeholder=
+                                    {newReserva.Cancha_id ? canchas.find(cancha => cancha.id === newReserva.Cancha_id)?.Nombre : 'Seleccione una cancha'}
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {canchas.map((cancha) => (
@@ -233,20 +253,19 @@ export default function ManejarReservas() {
                         <Select
                             name="Usuario_id"
                             value={newReserva.Usuario_id}
-                            onValueChange={(value) => handleSelectChange('Usuario_id', value)}
+                            onValueChange={handleSelectUsuarioChange}
                         >
                             <SelectTrigger
                                 className={`${
-                                    errors.Usuario_id ? 'border border-red-600' : ''
+                                    errors.Usuario_id ? 'border border-red-600' : 'w-full'
                                 }`}
                             >
-                                <SelectValue>
-                                    {newReserva.Usuario_id ? usuarios.find((usuario) => usuario.id === newReserva.Usuario_id)?.Nombre : 'Seleccione un usuario'}
-                                </SelectValue>
+                                <SelectValue placeholder=
+                                    {newReserva.Usuario_id ? usuarios.find(usuario => usuario.id === newReserva.Usuario_id)?.Nombre : 'Seleccione un usuario'} />
                             </SelectTrigger>
                             <SelectContent>
                                 {usuarios.map((usuario) => (
-                                    <SelectItem key={usuario.id} value={usuario.id}>{usuario.Nombre}</SelectItem>
+                                    <SelectItem key={usuario.uid} value={usuario.id}>{usuario.Nombre}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
