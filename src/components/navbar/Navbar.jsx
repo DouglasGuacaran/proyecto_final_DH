@@ -7,13 +7,16 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '../ui/button';
 import { Toggle } from "@/components/ui/toggle";
 import { useTheme } from '@/context/ThemeContext';
+import { BellIcon, CircleUserIcon, EllipsisVerticalIcon } from 'lucide-react';
+import { Menu } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, supabase } = useAuth();
   const [userName, setUserName] = useState('');
-  const[rol, setRol] = useState('');
+  const [rol, setRol] = useState('');
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -27,7 +30,6 @@ export default function Navbar() {
         if (error) {
           console.error('Error fetching user data:', error);
         } else {
-          // console.log(data); 
           setRol(data.Rol);
           setUserName(data.Username.charAt(0).toUpperCase() + data.Username.slice(1) || '');
         }
@@ -35,7 +37,7 @@ export default function Navbar() {
     };
 
     fetchUserName();
-  }, [user, supabase]); // Added 'supabase' as a dependency
+  }, [user, supabase]);
 
   const openMenu = () => setIsOpen(!isOpen);
 
@@ -93,10 +95,7 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 w-full border-gray-200 z-10 bg-background text-foreground`}>
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <Link
-          href="/"
-          className="flex items-center space-x-3 rtl:space-x-reverse"
-        >
+        <Link href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
           <Image
             src={'/logo-sinfondo.png'}
             width={50}
@@ -138,33 +137,50 @@ export default function Navbar() {
           id="navbar-default"
         >
           <ul className={`font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-background`}>
-            {user ?(
+            {user ? (
+              <div className='p-2'>
+                <a className='text-base'>Bienvenido {userName}</a>
+              </div>
+            ) : (
               <li>
-                <Button variant="link" className='text-base'>Bienvenido {userName}</Button>
+                <Link href="/register">
+                  <Button variant="link" className='text-base'>Crear Cuenta</Button>
+                </Link>
               </li>
-              ) : (
-            <li>
-              <Link href="/register">
-                <Button variant="link" className='text-base'>Crear Cuenta</Button>
-              </Link>
-            </li>
             )}
             {user ? (
               <>
-                <li>
-                  <Link href="/account">
-                    <Button variant="link" className='text-base'>Mi Cuenta</Button>
-                  </Link>
-                </li>
-                <li>
-                  <Button
-                    variant="link"
-                    className="text-base"
-                    onClick={handleLogout}
-                  >
-                    Cerrar Sesión
-                  </Button>
-                </li>
+                <Menu as="div" className="relative">
+                  <Menu.Button>
+                    <EllipsisVerticalIcon className="text-gray-500 h-6 w-6" />
+                  </Menu.Button>
+                  <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          className={`${
+                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                          onClick={handleLogout}
+                        >
+                          Cerrar Sesión
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          href="/account"
+                          className={`${
+                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Cuenta
+                        </Link>
+                      )}
+                    </Menu.Item>
+                  </Menu.Items>
+                </Menu>
               </>
             ) : (
               <li>
@@ -173,15 +189,18 @@ export default function Navbar() {
                 </Link>
               </li>
             )}
-            {rol =='Admin' ? (
-            <li>
-              <Link href="/admin">
-                <Button variant="link" className='text-base'>Administración del Sitio</Button>
-              </Link>
+            {rol === 'Admin' ? (
+              <>
+                <li>
+                  <Link href="/admin">
+                    <Button variant="link" className='text-base'>Administración del Sitio</Button>
+                  </Link>
+                </li>
+              </>
+            ) : null}
+            <li className="flex items-center space-x-4">
+              <BellIcon className="text-gray-500 h-6 w-6" />
             </li>
-            ) : (
-              null
-            )}
             <li>
               <Button
                 aria-label="Toggle dark mode"
