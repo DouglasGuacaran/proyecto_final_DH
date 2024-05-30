@@ -36,7 +36,6 @@ export default function Page() {
           Tamanio,
           Precio_hora,
           Disciplina_id,
-          Caracteristicas,
           Imagen_cancha (
             Url_img
           )
@@ -48,7 +47,7 @@ export default function Page() {
       if (error) {
         console.error('Error fetching cancha:', error);
       } else {
-        const dataCancha = { ...data, imagen: data.Imagen_cancha[0].Url_img };
+        const dataCancha = { ...data, imagen: data.Imagen_cancha.Url_img };
 
         setCancha(dataCancha);
       }
@@ -86,7 +85,7 @@ export default function Page() {
 
         {Imagen_cancha && Imagen_cancha.length > 0 && (
           Imagen_cancha.length > 1 ? (
-            <div className="w-full max-w-4xl mb-6">
+            <div className="w-full h-64 max-w-4xl mb-6">
               <Slider {...sliderSettings}>
                 {Imagen_cancha.map((imagen, index) => (
                   <div key={index} className="relative w-full h-64">

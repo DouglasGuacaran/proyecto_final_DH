@@ -87,7 +87,7 @@ export default function Page() {
             <div className="w-11/12 max-w-3xl p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-4">
-                  <Image alt="User Avatar" src="/user-avatar.png" className="rounded-full" height={40} width={40} />
+                  <Image alt="User Avatar" src="/user-avatar.png" className="rounded-full" height={40} width={40} fill/>
                   <div>
                     <h1 className="text-lg font-medium">{`${userData.nombre}`}</h1>
                     <p className="text-gray-500 dark:text-gray-400">{userData.email}</p>

@@ -75,12 +75,36 @@
     @apply bg-background text-foreground;
   }
 }
+*.border-border { /* Remove or adjust as needed */
+  border: 0 !important; /* Example to remove default border */
+}
+
+/* Theme-specific styles with consistent padding/margin */
+.pagination button.dark {
+  background-color: #222;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.pagination button.light {
+  background-color: #fff;
+  color: #000;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+}
 
 .tab {
   padding: 10px 20px;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.3s;
+  width: auto;
+  height: auto;
 }
 
 .tab-active {

@@ -26,7 +26,6 @@ export default function Page() {
     const [files, setFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
     const { canchas, fetchCanchas } = useCanchas();
-    console.log(canchas);
     const [newCancha, setNewCancha] = useState({
         Nombre: '',
         Superficie: '',
