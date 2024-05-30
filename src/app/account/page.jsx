@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -88,7 +88,7 @@ export default function Page() {
   const handleCancel = () => {
     const confirmed = confirm('¿Estás seguro de que deseas cancelar los cambios?');
     if (confirmed) {
-      router.push('/otra-ruta'); // Reemplaza '/otra-ruta' con la ruta a la que deseas navegar
+      router.push('/'); // Reemplaza '/otra-ruta' con la ruta a la que deseas navegar
     }
   };
 

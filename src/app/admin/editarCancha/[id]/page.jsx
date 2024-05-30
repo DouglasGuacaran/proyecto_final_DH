@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +20,7 @@ export default function EditarCancha() {
     const [selectedCaracteristicas, setSelectedCaracteristicas] = useState([]);
     const [file, setFile] = useState(null);
     const [imagenes, setImagenes] = useState([]);
-
+    const router = useRouter();
     const [errors, setErrors] = useState({
         Nombre: '',
         Superficie: '',
@@ -48,19 +49,19 @@ export default function EditarCancha() {
             console.error('Error fetching cancha:', error);
         } else {
             const { data: selectedCaracs, error: caracsError } = await supabase
-                .from('CanchaCaracteristicas')
-                .select('CaracteristicaId')
-                .eq('Cancha_id', canchaId);
+                .from('Cancha_Caracteristicas')
+                .select('Caracteristica_id')
+                .eq('Cancha_id', Cancha_id);
 
             if (caracsError) {
                 console.error('Error fetching cancha caracteristicas:', caracsError);
             } else {
-                setSelectedCaracteristicas(selectedCaracs.map(car => car.CaracteristicaId));
+                setSelectedCaracteristicas(selectedCaracs.map(car => car.Caracteristica_id));
             }
             const { data: images, error: imagesError } = await supabase
                 .from('Imagen_cancha')
                 .select('Url_img')
-                .eq('Cancha_id', canchaId);
+                .eq('Cancha_id', Cancha_id);
 
             if (imagesError) {
                 console.error('Error fetching cancha images:', imagesError);
@@ -107,13 +108,12 @@ export default function EditarCancha() {
         }));
     };
 
-    const handleCheckboxChange = (caracteristicaId) => {
+    const handleCheckboxChange = (Caracteristica_id) => {
         setSelectedCaracteristicas((prevState) =>
-            prevState.includes(caracteristicaId)
-                ? prevState.filter(id => id !== caracteristicaId)
-                : [...prevState, caracteristicaId]
+            prevState.includes(Caracteristica_id)
+                ? prevState.filter(id => id !== Caracteristica_id)
+                : [...prevState, Caracteristica_id]
             );
-            console.log(caracteristicaId);
     };
 
     const handleSelectChange = (e) => {
@@ -179,9 +179,9 @@ export default function EditarCancha() {
                 .delete()
                 .eq('Cancha_id', id);
 
-            const newCaracteristicas = selectedCaracteristicas.map(caracteristicaId => ({
+            const newCaracteristicas = selectedCaracteristicas.map(Caracteristica_id => ({
                 Cancha_id: id,
-                Caracteristica_id: caracteristicaId
+                Caracteristica_id: Caracteristica_id
             }));
 
             const { error: insertError } = await supabase
@@ -274,7 +274,7 @@ export default function EditarCancha() {
                         Editar Cancha
                     </h1>
                     <div className="mt-10 px-6">
-                        <Button onClick={() => window.location.href = '/admin'}>Volver a la edición</Button>
+                        <Button onClick={() => router.push('/')}>Volver a la edición</Button>
                         
                         <form
                             onSubmit={handleUpdate}
@@ -412,8 +412,8 @@ export default function EditarCancha() {
                                         <Image
                                             src={imagen}
                                             alt={`Imagen de la Cancha ${index + 1}`}
-                                            width={200}
-                                            height={200}
+                                            width={400}
+                                            height={400}
                                             className="object-cover rounded-md"
                                         />
                                         <button
