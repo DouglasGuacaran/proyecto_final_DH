@@ -5,11 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '../ui/button';
-import { Toggle } from "@/components/ui/toggle";
 import { useTheme } from '@/context/ThemeContext';
 import { BellIcon, CircleUserIcon, EllipsisVerticalIcon } from 'lucide-react';
 import { Menu } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -150,11 +148,35 @@ export default function Navbar() {
             )}
             {user ? (
               <>
+                {rol === 'Admin' && (
+                  <>
+                  <li>
+                    <Link href="/admin">
+                      <Button variant="link" className='text-base'>Administración del Sitio</Button>
+                    </Link>
+                  </li>
+                  <li>
+                    <BellIcon className="text-gray-500 h-6 w-6 mt-2" />
+                  </li>
+                  </>
+                )}
                 <Menu as="div" className="relative">
                   <Menu.Button>
-                    <EllipsisVerticalIcon className="text-gray-500 h-6 w-6" />
+                    <EllipsisVerticalIcon className="text-gray-500 h-6 w-6 mt-2" />
                   </Menu.Button>
                   <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          href="/account"
+                          className={`${
+                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                          >
+                          Mi Cuenta
+                        </Link>
+                      )}
+                    </Menu.Item>
                     <Menu.Item>
                       {({ active }) => (
                         <button
@@ -167,18 +189,6 @@ export default function Navbar() {
                         </button>
                       )}
                     </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          href="/account"
-                          className={`${
-                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                        >
-                          Cuenta
-                        </Link>
-                      )}
-                    </Menu.Item>
                   </Menu.Items>
                 </Menu>
               </>
@@ -189,18 +199,6 @@ export default function Navbar() {
                 </Link>
               </li>
             )}
-            {rol === 'Admin' ? (
-              <>
-                <li>
-                  <Link href="/admin">
-                    <Button variant="link" className='text-base'>Administración del Sitio</Button>
-                  </Link>
-                </li>
-              </>
-            ) : null}
-            <li className="flex items-center space-x-4">
-              <BellIcon className="text-gray-500 h-6 w-6" />
-            </li>
             <li>
               <Button
                 aria-label="Toggle dark mode"
