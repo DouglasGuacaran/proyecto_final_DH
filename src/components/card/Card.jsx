@@ -1,3 +1,4 @@
+import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Button } from '../ui/button';
 import Link from 'next/link';
@@ -8,6 +9,7 @@ import "slick-carousel/slick/slick-theme.css";
 
 const Card = ({ dataCancha }) => {
   const { theme } = useTheme();
+  const { user } = useAuth(); // Acceder a la información del usuario
   const { id, Nombre, Precio_hora, Imagen_cancha } = dataCancha;
 
   const settings = {
@@ -39,7 +41,7 @@ const Card = ({ dataCancha }) => {
       ) : (
         <div className="relative w-full h-64">
           <Image
-            src={Imagen_cancha[0]?.Url_img || '/default-image.jpg'} // Ruta a una imagen por defecto en caso de que no haya ninguna imagen
+            src={Imagen_cancha[0]?.Url_img || '/default-image.jpg'}
             alt={`Imagen de la Cancha`}
             layout="fill"
             objectFit="cover"
@@ -65,7 +67,9 @@ const Card = ({ dataCancha }) => {
               Detalle
             </Button>
           </Link>
-          <Button>Reservar</Button>
+          {user && ( // Mostrar el botón de Reservar solo si el usuario no está logueado
+            <Button>Reservar</Button>
+          )}
         </div>
       </div>
     </div>

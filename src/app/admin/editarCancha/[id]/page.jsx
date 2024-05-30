@@ -92,6 +92,13 @@ export default function EditarCancha() {
         }));
     };
 
+    const handleSelectChangeCaracteristicas = (value) => {
+        setCancha((prevState) => ({
+            ...prevState,
+            Caracteristicas: value,
+        }));
+    };
+
     const handleUpdate = async (e) => {
         e.preventDefault();
 
@@ -259,12 +266,11 @@ export default function EditarCancha() {
                                 <Label htmlFor="Caracteristicas">Caracteristicas</Label>
 
                                 <Select
-                                    name="Disciplina_id"
+                                    name="Caracteristicas"
                                     value={cancha.Caracteristicas}
-                                    onValueChange={handleSelectChange}
+                                    onValueChange={handleSelectChangeCaracteristicas}
                                 >
                                     <SelectTrigger  
-
                                         className={`${
                                             errors.Caracteristicas ? 'border border-red-600' : 'w-[280px] md:w-[600px] lg:w-[580px]'
                                         }`}

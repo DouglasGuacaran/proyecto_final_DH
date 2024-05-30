@@ -81,7 +81,6 @@ export default function Page() {
 
     // Manejar cambio en el select
     const handleSelectChange = (value) => {
-        console.log(value);
         setNewCancha((prevState) => ({
             ...prevState,
             Disciplina_id:value,
@@ -550,17 +549,17 @@ export default function Page() {
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="Disciplina_id">Disciplina</Label>
                         <Select
-                            name="Disciplina_id"
-                            onValueChange={handleSelectChange}
-                            >
+                        name='Disciplina_id'
+                        value={newCancha.Disciplina_id}
+                        onValueChange={handleSelectChange}
+                        >
                             <SelectTrigger
                                 className={`${
-                                    errors.Disciplina_id ? 'border border-red-600' : ''
+                                    errors.Disciplina_id ? 'border border-red-600' : 'w-full'
                                 }`}
                                 >
-                                <SelectValue>
-                                
-                                {newCancha.Disciplina_id ? canchas.find(cancha => cancha.id === newCancha.Cancha_id)?.Nombre : 'Seleccione una Disciplina'}
+                                <SelectValue placeholder='Seleccione una Disciplina'>
+                                    {newCancha.Disciplina_id ? canchas.find(cancha => cancha.id === newCancha.Cancha_id)?.Nombre : 'Seleccione una Disciplina'}
                                 </SelectValue> 
                             </SelectTrigger>
                             <SelectContent>

@@ -11,10 +11,12 @@ import { useUsuarios } from '@/context/UsuariosProvider';
 import { useTheme } from '@/context/ThemeContext';
 import {
     Select,
-    SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
+    SelectContent,
+    SelectLabel
 } from '@/components/ui/select';
 import { createClient } from '@/utils/supabase/client';
 
@@ -47,26 +49,16 @@ export default function ManejarReservas() {
         }));
     };
 
-    const handleSelectChange = (event) => {
-        setNewReserva({ Cancha_id: event.target.value });
-    };
-    // const handleSelectChange = (name,value) => {
-    //     setNewReserva((prevState) => ({
-    //         ...prevState,
-    //         [name]: value,
-    //     }));
+    // const handleSelectChange = (event) => {
+    //     setNewReserva({ Cancha_id: event.target.value });
     // };
-
-
-    const handleSelectCanchaChange = (value) => {
+    const handleSelectChange = (value) => {
         setNewReserva((prevState) => ({
             ...prevState,
             Cancha_id: value,
-            Nombre: canchas.find(cancha => cancha.id === value)?.Nombre,
         }));
-
     };
-
+    
     const handleSelectUsuarioChange = (value) => {
         setNewReserva((prevState) => ({
             ...prevState,
@@ -225,56 +217,72 @@ export default function ManejarReservas() {
                     className="max-w-xl ml-10 flex flex-col gap-5"
                 >
                     <div className="flex flex-col space-y-1.5">
-                        <Label htmlFor="Cancha_id">Cancha</Label>
-                        <Select
-                            name='Cancha_id'
-                            value={newReserva.Cancha_id}
-                            onValueChange={handleSelectCanchaChange}
+                    <Label htmlFor="Cancha_id">Cancha</Label>
+                    <Select
+                        name="Cancha_id"
+                        value={newReserva.Cancha_id}
+                        onValueChange={handleSelectChange}
+                    >
+                        <SelectTrigger
+                            className={`${
+                                errors.Cancha_id ? 'border border-red-600' : 'w-full'
+                            }`}
                         >
-                            <SelectTrigger className={`${errors.Cancha_id ? 'border border-red-600' : 'w-full'}`}>
-                                <SelectValue placeholder=
-                                    {newReserva.Cancha_id ? canchas.find(cancha => cancha.id === newReserva.Cancha_id)?.Nombre : 'Seleccione una cancha'}
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {canchas.map((cancha) => (
-                                    <SelectItem key={cancha.id.key} value={cancha.id}>{cancha.Nombre}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.Cancha_id && (
-                            <span className="text-xs text-red-600 mt-1 ml-2">
-                                {errors.Cancha_id}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex flex-col space-y-1.5">
-                        <Label htmlFor="Usuario_id">Usuario</Label>
-                        <Select
-                            name="Usuario_id"
-                            value={newReserva.Usuario_id}
-                            onValueChange={handleSelectUsuarioChange}
-                        >
-                            <SelectTrigger
-                                className={`${
-                                    errors.Usuario_id ? 'border border-red-600' : 'w-full'
-                                }`}
-                            >
-                                <SelectValue placeholder=
-                                    {newReserva.Usuario_id ? usuarios.find(usuario => usuario.id === newReserva.Usuario_id)?.Nombre : 'Seleccione un usuario'} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {usuarios.map((usuario) => (
-                                    <SelectItem key={usuario.uid} value={usuario.id}>{usuario.Nombre}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.Usuario_id && (
-                            <span className="text-xs text-red-600 mt-1 ml-2">
-                                {errors.Usuario_id}
-                            </span>
-                        )}
-                    </div>
+                            <SelectValue placeholder="Seleccione una cancha">
+                                {newReserva.Cancha_id ? canchas.find(cancha => cancha.id === newReserva.Cancha_id)?.Nombre : 'Seleccione una cancha'}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                
+                        <SelectLabel>Canchas</SelectLabel>
+                        {/* <SelectItem value="">Unassigned</SelectItem> */}
+                            {canchas.map((cancha) => (
+                                <SelectItem key={cancha.id} value={cancha.id}>{cancha.Nombre}</SelectItem>
+                            ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    {errors.Cancha_id && (
+                        <span className="text-xs text-red-600 mt-1 ml-2">
+                            {errors.Cancha_id}
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="Usuario_id">Usuario</Label>
+                <Select
+                    name="Usuario_id"
+                    value={newReserva.Usuario_id}
+                    onValueChange={handleSelectUsuarioChange}
+                >
+                    <SelectTrigger
+                        className={`${
+                            errors.Usuario_id ? 'border border-red-600' : 'w-full'
+                        }`}
+                    >
+                        <SelectValue placeholder="Seleccione un usuario" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Usuarios</SelectLabel>
+                            {usuarios.map((usuario, index) => (
+                                <SelectItem key={`usuario-${index}`} value={usuario.id}>
+                                    {usuario.Nombre}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                {errors.Usuario_id && (
+                    <span className="text-xs text-red-600 mt-1 ml-2">
+                        {errors.Usuario_id}
+                    </span>
+                )}
+            </div>
+
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="Fecha_hora_inicio">Fecha y Hora de Inicio</Label>
                         <Input

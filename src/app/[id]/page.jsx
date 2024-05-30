@@ -9,13 +9,18 @@ import Image from "next/image";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext'; // Importa el contexto de autenticación
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import Slider from 'react-slick';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 export default function Page() {
   const { id } = useParams();
   const [cancha, setCancha] = useState({});
   const { theme } = useTheme();
+  const { user } = useAuth(); // Accede a la información del usuario
 
   useEffect(() => {
     const getCanchaWithId = async (id) => {
@@ -54,9 +59,16 @@ export default function Page() {
     }
   }, [id]);
 
-  console.log(cancha.Caracteristicas);
+  const { Nombre, Precio_hora, Superficie, Tamanio, Caracteristicas, Imagen_cancha } = cancha;
 
-  const { Nombre, Precio_hora, imagen, Superficie, Tamanio, Caracteristicas } = cancha;
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+  };
 
   return (
     <>
@@ -70,20 +82,41 @@ export default function Page() {
         <h1 className={`mb-4 text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           {Nombre}
         </h1>
+        <div className={`w-full max-w-sm ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-200'} rounded-lg shadow flex flex-col justify-between`}>
 
-        {imagen && (
-          <div className="w-full max-w-4xl mb-6">
-            <Image
-              className="object-cover w-full rounded-lg"
-              src={imagen}
-              width={1200}  // Ajusta estos valores según sea necesario
-              height={800}  // Ajusta estos valores según sea necesario
-              priority
-              alt="imagen de la cancha"
-            />
-          </div>
+        {Imagen_cancha && Imagen_cancha.length > 0 && (
+          Imagen_cancha.length > 1 ? (
+            <div className="w-full max-w-4xl mb-6">
+              <Slider {...sliderSettings}>
+                {Imagen_cancha.map((imagen, index) => (
+                  <div key={index} className="relative w-full h-64">
+                    <Image
+                      src={imagen.Url_img}
+                      alt={`Imagen de la Cancha ${index + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-t-lg cursor-pointer"
+                      onClick={() => window.open(imagen.Url_img, '_blank')}
+                      />
+                  </div>
+                ))}
+              </Slider>
+            </div>
+          ) : (
+            <div className="relative w-full h-64 mb-6">
+              <Image
+                src={Imagen_cancha[0]?.Url_img || '/default-image.jpg'}
+                alt={`Imagen de la Cancha`}
+                layout="fill"
+                objectFit="cover"
+                className="rounded-t-lg cursor-pointer"
+                onClick={() => window.open(Imagen_cancha[0]?.Url_img, '_blank')}
+                />
+            </div>
+          )
         )}
 
+        </div>
         <div className={`w-full max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6`}>
           <h6 className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}>Características</h6>
 
@@ -113,7 +146,9 @@ export default function Page() {
             <li className='font-semibold text-lg mt-3'>$ {Precio_hora}</li>
           </ul>
 
-          <Button className='w-full'>Reservar</Button>
+          {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
+            <Button className='w-full'>Reservar</Button>
+          )}
         </div>
       </main>
       <Footer />
