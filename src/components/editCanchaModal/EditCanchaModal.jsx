@@ -2,6 +2,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -300,17 +307,33 @@ const EditCanchaModal = ({ canchaId, onClose }) => {
                                 <Input name="Precio_hora" value={cancha.Precio_hora} onChange={handleInputChange} />
                                 {errors.Precio_hora && <p className="text-red-500">{errors.Precio_hora}</p>}
                             </div>
-                            <div className="w-full">
-                                <Label>Disciplina</Label>
-                                <select name="Disciplina_id" value={cancha.Disciplina_id} onChange={handleSelectChange} className="block w-full mt-1">
-                                    <option value="">Seleccione una disciplina</option>
-                                    {disciplinas.map((disciplina) => (
-                                        <option key={disciplina.id} value={disciplina.id}>
-                                            {disciplina.Nombre}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.Disciplina_id && <p className="text-red-500">{errors.Disciplina_id}</p>}
+                            <div className="flex flex-col space-y-1.5">
+                                <Label htmlFor="Disciplina_id">Disciplina</Label>
+                                <Select
+                                    name='Disciplina_id'
+                                    value={cancha.Disciplina_id}
+                                    onValueChange={(value) => handleSelectChange({ target: { name: 'Disciplina_id', value } })}
+                                >
+                                    <SelectTrigger
+                                        className={`${errors.Disciplina_id ? 'border border-red-600' : 'w-full'}`}
+                                    >
+                                        <SelectValue placeholder='Seleccione una Disciplina'>
+                                            {cancha.Disciplina_id ? disciplinas.find(disciplina => disciplina.id === cancha.Disciplina_id)?.Nombre : 'Seleccione una Disciplina'}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {disciplinas.map((disciplina) => (
+                                            <SelectItem key={disciplina.id} value={disciplina.id.toString()}>
+                                                {disciplina.Nombre}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.Disciplina_id && (
+                                    <span className="text-xs text-red-600 mt-1 ml-2">
+                                        {errors.Disciplina_id}
+                                    </span>
+                                )}
                             </div>
                             <div className="w-full">
                                 <Label>Características</Label>
@@ -355,6 +378,7 @@ const EditCanchaModal = ({ canchaId, onClose }) => {
                     </form>
                 </div>
             </div>
+            <Toaster />
         </div>
     );
 };
