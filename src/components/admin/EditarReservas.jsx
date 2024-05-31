@@ -222,7 +222,7 @@ export default function ManejarReservas() {
 
                             <SelectContent>
                                 {canchas.map((cancha) => (
-                                    <SelectItem key={cancha.id} value={cancha.id.toString()}>{cancha.Nombre}</SelectItem>
+                                    <SelectItem key={cancha.id} value={cancha.id    }>{cancha.Nombre}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
