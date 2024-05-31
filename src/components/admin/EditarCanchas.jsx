@@ -309,6 +309,21 @@ export default function Page() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
     };
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    // calcular elementos
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = canchas.slice(indexOfFirstItem, indexOfLastItem);
+
+    // total pags
+    const totalPages = Math.ceil(canchas.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    }
     return (
         <>
 
@@ -512,12 +527,10 @@ export default function Page() {
                 </h2>
             </div>
             <main className={`hidden md:block text-sm sm:text-base md:text-lg lg:text-xl min-h-screen p-4 mt-32 flex-col ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}>
-
                 <div className='flex justify-between'>
                     <h1 className="text-2xl font-semibold ml-6 antialiased">
                         Editar Canchas
                     </h1>
-
                     <Button onClick={handleOpenModal}>Agregar canchas</Button>
                 </div>
 
@@ -525,31 +538,17 @@ export default function Page() {
                     <table className="w-full text-sm text-left">
                         <thead className={`text-sm uppercase ${theme === 'dark' ? 'text-gray-400 bg-gray-700' : 'text-gray-700 bg-[#F4F4F4]'}`}>
                             <tr>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Nombre
-                                </th>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Tipo de Superficie
-                                </th>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Tamaño
-                                </th>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Precio de la hora
-                                </th>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Disciplina
-                                </th>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Imágenes
-                                </th>
-                                <th scope="col" className="px-6 py-3 font-semibold">
-                                    Acciones
-                                </th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Nombre</th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Tipo de Superficie</th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Tamaño</th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Precio de la hora</th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Disciplina</th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Imágenes</th>
+                                <th scope="col" className="px-6 py-3 font-semibold">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {canchas.map((cancha) => (
+                            {currentItems.map((cancha) => (
                                 <tr key={cancha.id} className={`border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                                     <td className="px-6 py-4 font-medium">{cancha.Nombre}</td>
                                     <td className="px-6 py-4">{cancha.Superficie}</td>
@@ -618,8 +617,23 @@ export default function Page() {
                             ))}
                         </tbody>
                     </table>
-                </div>
 
+                    {/* paginador */}
+                    <div className="flex justify-center mt-6">
+                        {Array.from({ length: totalPages }, (_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handlePageChange(index + 1)}
+                                className={`m-3 px-3 py-2 ml-0 leading-tight ${theme === 'dark' ?
+                                    'bg-gray-800 text-white border-gray-700 hover:bg-gray-600' :
+                                    'bg-white text-black border-gray-300 hover:bg-gray-200 hover:text-gray-700'
+                                    } rounded-lg`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </main>
         </>
     );
