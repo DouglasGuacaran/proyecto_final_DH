@@ -1,6 +1,7 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/navbar/Navbar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,7 @@ import Image from 'next/image';
 
 export default function Page() {
   const { user } = useAuth();
+  const router = useRouter(); // Hook para la navegación
   const [userData, setUserData] = useState({
     nombre: '',
     email: '',
@@ -57,6 +59,12 @@ export default function Page() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const confirmed = confirm('¿Estás seguro de que deseas actualizar tus datos?');
+
+    if (!confirmed) {
+      return; // Si el usuario cancela, no hacemos nada
+    }
+
     const supabase = createClient();
 
     const { error } = await supabase
@@ -77,6 +85,13 @@ export default function Page() {
     }
   };
 
+  const handleCancel = () => {
+    const confirmed = confirm('¿Estás seguro de que deseas cancelar los cambios?');
+    if (confirmed) {
+      router.push('/'); // Reemplaza '/otra-ruta' con la ruta a la que deseas navegar
+    }
+  };
+
   return (
     <>
       <main>
@@ -87,7 +102,7 @@ export default function Page() {
             <div className="w-11/12 max-w-3xl p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-4">
-                  <Image alt="User Avatar" src="/user-avatar.png" className="rounded-full" height={40} width={40} />
+                  <Image alt="User Avatar" src="/user-avatar.png" className="rounded-full" height={40} width={40}/>
                   <div>
                     <h1 className="text-lg font-medium">{`${userData.nombre}`}</h1>
                     <p className="text-gray-500 dark:text-gray-400">{userData.email}</p>
@@ -116,7 +131,7 @@ export default function Page() {
                   <Input id="telefono" name="telefono" type="text" value={userData.telefono} onChange={handleChange} />
                 </div>
                 <div className="flex justify-end space-x-2 mt-4">
-                  <Button variant="outline" type="reset">Cancelar</Button>
+                  <Button variant="outline" type="button" onClick={handleCancel}>Cancelar</Button>
                   <Button type="submit">Guardar cambios</Button>
                 </div>
               </form>
@@ -148,5 +163,3 @@ function SettingsIcon(props) {
     </svg>
   );
 }
-
-

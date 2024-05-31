@@ -1,21 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import Image from "next/image";
-import { redirect } from 'next/navigation';
 
 // Inicializar cliente de Supabase
 const supabase = createClient();
@@ -23,8 +16,11 @@ const supabase = createClient();
 export default function EditarCancha() {
     const [id, setId] = useState(null);
     const [cancha, setCancha] = useState(null);
+    const [caracteristicas, setCaracteristicas] = useState([]);
+    const [selectedCaracteristicas, setSelectedCaracteristicas] = useState([]);
     const [file, setFile] = useState(null);
-
+    const [imagenes, setImagenes] = useState([]);
+    const router = useRouter();
     const [errors, setErrors] = useState({
         Nombre: '',
         Superficie: '',
@@ -42,31 +38,58 @@ export default function EditarCancha() {
         setId(canchaId);
     }, []);
 
-    const fetchCancha = useCallback(async (canchaId) => {
+    const fetchCancha = useCallback(async (Cancha_id) => {
         const { data, error } = await supabase
             .from('Cancha')
             .select('*')
-            .eq('id', canchaId)
+            .eq('id', Cancha_id)
             .single();
 
         if (error) {
             console.error('Error fetching cancha:', error);
         } else {
-            // Asegúrate de que Imagen_cancha siempre sea un array
-            console.log(data); 
-            if (!data.Imagen_cancha) {
-                data.Imagen_cancha = [];
+            const { data: selectedCaracs, error: caracsError } = await supabase
+                .from('Cancha_Caracteristicas')
+                .select('Caracteristica_id')
+                .eq('Cancha_id', Cancha_id);
+
+            if (caracsError) {
+                console.error('Error fetching cancha caracteristicas:', caracsError);
+            } else {
+                setSelectedCaracteristicas(selectedCaracs.map(car => car.Caracteristica_id));
             }
-            console.log(data);
+            const { data: images, error: imagesError } = await supabase
+                .from('Imagen_cancha')
+                .select('Url_img')
+                .eq('Cancha_id', Cancha_id);
+
+            if (imagesError) {
+                console.error('Error fetching cancha images:', imagesError);
+            } else {
+                data.Imagen_cancha = images.map(image => image.Url_img);
+                setImagenes(data.Imagen_cancha);
+            }
             setCancha(data);
+        }
+    }, []);
+
+    const fetchCaracteristicas = useCallback(async () => {
+        const { data, error } = await supabase
+            .from('Caracteristicas')
+            .select('*');
+        if (error) {
+            console.error('Error fetching caracteristicas:', error);
+        } else {
+            setCaracteristicas(data);
         }
     }, []);
 
     useEffect(() => {
         if (id) {
             fetchCancha(id);
+            fetchCaracteristicas();
         }
-    }, [id, fetchCancha]);
+    }, [id, fetchCancha, fetchCaracteristicas]);
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -85,7 +108,16 @@ export default function EditarCancha() {
         }));
     };
 
-    const handleSelectChange = (value) => {
+    const handleCheckboxChange = (Caracteristica_id) => {
+        setSelectedCaracteristicas((prevState) =>
+            prevState.includes(Caracteristica_id)
+                ? prevState.filter(id => id !== Caracteristica_id)
+                : [...prevState, Caracteristica_id]
+            );
+    };
+
+    const handleSelectChange = (e) => {
+        const { value } = e.target;
         setCancha((prevState) => ({
             ...prevState,
             Disciplina_id: value,
@@ -108,7 +140,7 @@ export default function EditarCancha() {
         if (cancha.Nombre === '') newErrors.Nombre = 'Por favor, ingrese el nombre.';
         if (cancha.Superficie === '') newErrors.Superficie = 'Por favor, ingrese la superficie.';
         if (cancha.Tamanio === '') newErrors.Tamanio = 'Por favor, ingrese el tamaño.';
-        if (cancha.Caracteristicas === '') newErrors.Precio_hora = 'Por favor, ingrese las características.';
+        if (selectedCaracteristicas.length === 0) newErrors.Caracteristicas = 'Por favor, seleccione al menos una característica.';
         if (cancha.Precio_hora === '') newErrors.Precio_hora = 'Por favor, ingrese el precio por hora.';
         if (cancha.Disciplina_id === '') newErrors.Disciplina_id = 'Por favor, seleccione una disciplina.';
 
@@ -129,55 +161,107 @@ export default function EditarCancha() {
 
         const { error } = await supabase
             .from('Cancha')
-            .update(cancha)
+            .update({
+                Nombre: cancha.Nombre,
+                Superficie: cancha.Superficie,
+                Tamanio: cancha.Tamanio,
+                Precio_hora: cancha.Precio_hora,
+                Disciplina_id: cancha.Disciplina_id,
+            })
             .eq('id', id);
 
         if (error) {
             console.error('Error updating cancha:', error);
         } else {
-            if (file) {
-                // Subir nueva imagen
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}.${fileExt}`;
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('imagenes_canchas')
-                    .upload(fileName, file);
+            // Update cancha caracteristicas
+            await supabase
+                .from('Cancha_Caracteristicas')
+                .delete()
+                .eq('Cancha_id', id);
 
-                if (uploadError) {
-                    console.error('Error uploading file:', uploadError);
-                } else {
-                    // Obtener URL pública de la imagen
-                    const {
-                        data: { publicUrl },
-                        error: publicUrlError,
-                    } = supabase.storage.from('imagenes_canchas').getPublicUrl(fileName);
+            const newCaracteristicas = selectedCaracteristicas.map(Caracteristica_id => ({
+                Cancha_id: id,
+                Caracteristica_id: Caracteristica_id
+            }));
 
-                    if (publicUrlError) {
-                        console.error('Error getting public URL:', publicUrlError);
+            const { error: insertError } = await supabase
+                .from('Cancha_Caracteristicas')
+                .insert(newCaracteristicas);
+
+            if (insertError) {
+                console.error('Error updating cancha caracteristicas:', insertError);
+            } else {
+                if (file) {
+                    // Subir nueva imagen
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}.${fileExt}`;
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('Imagen_cancha')
+                        .upload(fileName, file);
+
+                    if (uploadError) {
+                        console.error('Error uploading file:', uploadError);
                     } else {
-                        // Insertar nueva imagen en la tabla Imagen_cancha
-                        const { error: imageError } = await supabase
-                            .from('Imagen_cancha')
-                            .insert([{ Cancha_id: id, Url_img: publicUrl }]);
+                        // Obtener URL pública de la imagen
+                        const {
+                            data: { publicUrl },
+                            error: publicUrlError,
+                        } = supabase.storage.from('Imagen_cancha').getPublicUrl(fileName);
 
-                        if (imageError) {
-                            console.error('Error inserting image data:', imageError);
+                        if (publicUrlError) {
+                            console.error('Error getting public URL:', publicUrlError);
                         } else {
-                            toast({
-                                title: 'Cancha Actualizada',
-                                description: `La cancha ${cancha.Nombre} fue actualizada correctamente!`,
-                            });
-                            setFile(null);
-                            fetchCancha(id);
+                            // Insertar nueva imagen en la tabla Imagen_cancha
+                            const { error: imageError } = await supabase
+                                .from('Imagen_cancha')
+                                .insert([{ Cancha_id: id, Url_img: publicUrl }]);
+
+                            if (imageError) {
+                                console.error('Error inserting image data:', imageError);
+                            } else {
+                                toast({
+                                    title: 'Cancha Actualizada',
+                                    description: `La cancha ${cancha.Nombre} fue actualizada correctamente!`,
+                                });
+                                setFile(null);
+                                fetchCancha(id);
+                            }
                         }
                     }
+                } else {
+                    toast({
+                        title: 'Cancha Actualizada',
+                        description: `La cancha ${cancha.Nombre} fue actualizada correctamente!`,
+                    });
+                    fetchCancha(id);
                 }
+            }
+        }
+    };
+
+    const handleDeleteImage = async (imageUrl) => {
+        const fileName = imageUrl.split('/').pop();
+        const { error: deleteError } = await supabase.storage
+            .from('Imagen_cancha')
+            .remove([fileName]);
+
+        if (deleteError) {
+            console.error('Error deleting file:', deleteError);
+        } else {
+            const { error: deleteImageError } = await supabase
+                .from('Imagen_cancha')
+                .delete()
+                .eq('Url_img', imageUrl)
+                .eq('Cancha_id', id);
+
+            if (deleteImageError) {
+                console.error('Error deleting image record:', deleteImageError);
             } else {
                 toast({
-                    title: 'Cancha Actualizada',
-                    description: `La cancha ${cancha.Nombre} fue actualizada correctamente!`,
+                    title: 'Imagen eliminada',
+                    description: 'La imagen fue eliminada correctamente!',
                 });
-                fetchCancha(id);
+                setImagenes(imagenes.filter(img => img !== imageUrl));
             }
         }
     };
@@ -190,7 +274,7 @@ export default function EditarCancha() {
                         Editar Cancha
                     </h1>
                     <div className="mt-10 px-6">
-                    <Button onClick={() => redirect('/admin')}>Volver a la edición</Button>
+                        <Button onClick={() => router.push('/')}>Volver a la edición</Button>
                         
                         <form
                             onSubmit={handleUpdate}
@@ -256,31 +340,20 @@ export default function EditarCancha() {
                                 )}
                             </div>
                             <div className="flex flex-col space-y-1.5">
-                                <Label htmlFor="Caracteristicas">Caracteristicas</Label>
-
-                                <Select
-                                    name="Disciplina_id"
-                                    value={cancha.Caracteristicas}
-                                    onValueChange={handleSelectChange}
-                                >
-                                    <SelectTrigger  
-
-                                        className={`${
-                                            errors.Caracteristicas ? 'border border-red-600' : 'w-[280px] md:w-[600px] lg:w-[580px]'
-                                        }`}
-                                    >
-                                    <SelectValue>
-                                        {cancha.Caracteristicas ? cancha.Caracteristicas.join(', '): 'Seleccione una característica'}
-                                    </SelectValue> 
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                    {cancha.Caracteristicas.map((car) => (
-                                        <SelectItem key={car} value={car}>
-                                        {car} 
-                                    </SelectItem>
-                                    ))} 
-                                    </SelectContent>
-                                </Select>
+                                <Label htmlFor="Caracteristicas">Características</Label>
+                                <div>
+                                    {caracteristicas.map((car) => (
+                                        <div key={car.id}>
+                                            <input
+                                                type="checkbox"
+                                                id={`caracteristica-${car.id}`}
+                                                checked={selectedCaracteristicas.includes(car.id)}
+                                                onChange={() => handleCheckboxChange(car.id)}
+                                            />
+                                            <label htmlFor={`caracteristica-${car.id}`}>{car.Nombre}</label>
+                                        </div>
+                                    ))}
+                                </div>
                                 {errors.Caracteristicas && (
                                     <span className="text-xs text-red-600 mt-1 ml-2">
                                         {errors.Caracteristicas}
@@ -289,20 +362,19 @@ export default function EditarCancha() {
                             </div>
                             <div className="flex flex-col space-y-1.5">
                                 <Label htmlFor="Disciplina_id">Disciplina</Label>
-                                <Select>
-                                    <SelectTrigger
-                                        className={`${
-                                            errors.Disciplina_id ? 'border border-red-600' : 'w-[580px] md:w-[600px] lg:w-[580px]'
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="Seleccione una disciplina" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">Fútbol</SelectItem>
-                                        <SelectItem value="2">Tennis</SelectItem>
-                                        <SelectItem value="3">Paddle</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <select
+                                    name="Disciplina_id"
+                                    value={cancha.Disciplina_id}
+                                    onChange={handleSelectChange}
+                                    className={`${
+                                        errors.Disciplina_id ? 'border border-red-600' : 'w-[580px] md:w-[600px] lg:w-[580px]'
+                                    }`}
+                                >
+                                    <option value="">Seleccione una disciplina</option>
+                                    <option value="1">Fútbol</option>
+                                    <option value="2">Tenis</option>
+                                    <option value="3">Paddle</option>
+                                </select>
                                 {errors.Disciplina_id && (
                                     <span className="text-xs text-red-600 mt-1 ml-2">
                                         {errors.Disciplina_id}
@@ -329,21 +401,28 @@ export default function EditarCancha() {
                             </Button>
                         </form>
                     </div>
-                    {Array.isArray(cancha.Imagen_cancha) && cancha.Imagen_cancha.length > 0 && (
+                    {Array.isArray(imagenes) && imagenes.length > 0 && (
                         <div className="mt-10 px-6">
                             <h2 className="text-xl font-semibold ml-6 antialiased">
                                 Imágenes de la Cancha
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-                                {cancha.Imagen_cancha.map((imagen, index) => (
+                                {imagenes.map((imagen, index) => (
                                     <div key={index} className="relative">
                                         <Image
                                             src={imagen}
                                             alt={`Imagen de la Cancha ${index + 1}`}
-                                            width={200}
-                                            height={200}
+                                            width={400}
+                                            height={400}
                                             className="object-cover rounded-md"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteImage(imagen)}
+                                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1"
+                                        >
+                                            ×
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -355,4 +434,3 @@ export default function EditarCancha() {
         </>
     );
 }
-    

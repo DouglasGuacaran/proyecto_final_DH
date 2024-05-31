@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,12 +7,19 @@ import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/toaster';
 import { useTheme } from '@/context/ThemeContext';
 import { createClient } from '@/utils/supabase/client';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export default function EditarUsuarios() {
     const { theme } = useTheme();
     const [usuarios, setUsuarios] = useState([]);
-    const [reservas, setReservas] = useState([]);
-    const [newUsuario, setNewUsuario] = useState({
+    const [selectedUsuario, setSelectedUsuario] = useState(null);
+    const [formValues, setFormValues] = useState({
         Nombre: '',
         Username: '',
         Correo: '',
@@ -25,7 +34,6 @@ export default function EditarUsuarios() {
 
     useEffect(() => {
         fetchUsuarios();
-        fetchReservas();
     }, []);
 
     const fetchUsuarios = async () => {
@@ -41,28 +49,18 @@ export default function EditarUsuarios() {
         }
     };
 
-    const fetchReservas = async () => {
-        const supabase = createClient();
-        const { data, error } = await supabase
-            .from('Reserva')
-            .select(`
-                *,
-                Cancha (Nombre),
-                Usuario (Nombre)
-            `);
-
-        if (error) {
-            console.error('Error al obtener las reservas:', error);
-        } else {
-            setReservas(data);
-        }
-    };
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNewUsuario((prevState) => ({
+        setFormValues((prevState) => ({
             ...prevState,
             [name]: value,
+        }));
+    };
+
+    const handleSelectChange = (value) => {
+        setFormValues((prevState) => ({
+            ...prevState,
+            Rol: value,
         }));
     };
 
@@ -70,13 +68,13 @@ export default function EditarUsuarios() {
         e.preventDefault();
 
         let newErrors = {};
-        if (newUsuario.Nombre === '') newErrors.Nombre = 'Por favor, ingrese el nombre.';
-        if (newUsuario.Username === '') newErrors.Username = 'Por favor, ingrese el username.';
-        if (newUsuario.Correo === '') newErrors.Correo = 'Por favor, ingrese el correo.';
-        if (newUsuario.Telefono === '') newErrors.Telefono = 'Por favor, ingrese el teléfono.';
-        if (newUsuario.Rol === '') newErrors.Rol = 'Por favor, seleccione un rol.';
-        if (newUsuario.Direccion === '') newErrors.Direccion = 'Por favor, ingrese la dirección.';
-        if (newUsuario.DocumentoDeIdentificacion === '') newErrors.DocumentoDeIdentificacion = 'Por favor, ingrese el documento de identificación.';
+        if (formValues.Nombre === '') newErrors.Nombre = 'Por favor, ingrese el nombre.';
+        if (formValues.Username === '') newErrors.Username = 'Por favor, ingrese el username.';
+        if (formValues.Correo === '') newErrors.Correo = 'Por favor, ingrese el correo.';
+        if (formValues.Telefono === '') newErrors.Telefono = 'Por favor, ingrese el teléfono.';
+        if (formValues.Rol === '') newErrors.Rol = 'Por favor, seleccione un rol.';
+        if (formValues.Direccion === '') newErrors.Direccion = 'Por favor, ingrese la dirección.';
+        if (formValues.DocumentoDeIdentificacion === '') newErrors.DocumentoDeIdentificacion = 'Por favor, ingrese el documento de identificación.';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -84,14 +82,24 @@ export default function EditarUsuarios() {
         }
 
         const supabase = createClient();
-        const { error } = await supabase
-            .from('Usuario')
-            .insert([newUsuario]);
+        let error;
+        if (selectedUsuario) {
+            const { error: updateError } = await supabase
+                .from('Usuario')
+                .update(formValues)
+                .eq('id', selectedUsuario.id);
+            error = updateError;
+        } else {
+            const { error: insertError } = await supabase
+                .from('Usuario')
+                .insert([formValues]);
+            error = insertError;
+        }
 
         if (error) {
-            setSupabaseErrors('Error al insertar el usuario.');
+            setSupabaseErrors('Error al insertar o actualizar el usuario.');
         } else {
-            setNewUsuario({
+            setFormValues({
                 Nombre: '',
                 Username: '',
                 Correo: '',
@@ -100,6 +108,7 @@ export default function EditarUsuarios() {
                 Direccion: '',
                 DocumentoDeIdentificacion: ''
             });
+            setSelectedUsuario(null);
             fetchUsuarios();
         }
     };
@@ -118,18 +127,9 @@ export default function EditarUsuarios() {
         }
     };
 
-    const handleUpdate = async (id, updatedData) => {
-        const supabase = createClient();
-        const { error } = await supabase
-            .from('Usuario')
-            .update(updatedData)
-            .eq('id', id);
-
-        if (error) {
-            setSupabaseErrors('Error al actualizar el usuario.');
-        } else {
-            fetchUsuarios();
-        }
+    const handleEdit = (usuario) => {
+        setSelectedUsuario(usuario);
+        setFormValues(usuario);
     };
 
     return (
@@ -201,6 +201,26 @@ export default function EditarUsuarios() {
                                     <td className="px-6 py-4">{usuario.DocumentoDeIdentificacion}</td>
                                     <td className="px-6 py-4 flex space-x-2">
                                         <Button
+                                            onClick={() => handleEdit(usuario)}
+                                            size="icon"
+                                            className={`border ${theme === 'dark' ? 'border-blue-600 text-blue-600 bg-gray-800 hover:bg-blue-600 hover:text-white' : 'border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white'}`}
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth="1.5"
+                                                stroke="currentColor"
+                                                className="w-5 h-5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M19.25 6.75A2.25 2.25 0 0 0 17 4.5H7A2.25 2.25 0 0 0 4.75 6.75V9h14.5V6.75zM19.25 10.5h-14.5V17.25A2.25 2.25 0 0 0 7 19.5h10a2.25 2.25 0 0 0 2.25-2.25V10.5z"
+                                                />
+                                            </svg>
+                                        </Button>
+                                        <Button
                                             onClick={() => handleDelete(usuario.id)}
                                             size="icon"
                                             className={`border ${theme === 'dark' ? 'border-red-600 text-red-600 bg-gray-800 hover:bg-red-600 hover:text-white' : 'border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white'}`}
@@ -220,26 +240,6 @@ export default function EditarUsuarios() {
                                                 />
                                             </svg>
                                         </Button>
-                                        <Button
-                                            onClick={() => handleUpdate(usuario.id, { Rol: usuario.Rol === 'Usuario' ? 'Admin' : 'Usuario' })}
-                                            size="icon"
-                                            className={`border ${theme === 'dark' ? 'border-blue-600 text-blue-600 bg-gray-800 hover:bg-blue-600 hover:text-white' : 'border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white'}`}
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth="1.5"
-                                                stroke="currentColor"
-                                                className="w-5 h-5"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M19.25 6.75A2.25 2.25 0 0 0 17 4.5H7A2.25 2.25 0 0 0 4.75 6.75V9h14.5V6.75zM19.25 10.5h-14.5V17.25A2.25 2.25 0 0 0 7 19.5h10a2.25 2.25 0 0 0 2.25-2.25V10.5z"
-                                                />
-                                            </svg>
-                                        </Button>
                                     </td>
                                 </tr>
                             ))}
@@ -253,7 +253,7 @@ export default function EditarUsuarios() {
                 )}
                 <div className="m-4">
                     <h2 className="text-xl font-semibold ml-6 antialiased mt-20 mb-10">
-                        Ingresar Nuevo Usuario
+                        {selectedUsuario ? 'Editar Usuario' : 'Ingresar Nuevo Usuario'}
                     </h2>
                 </div>
                 <form
@@ -265,7 +265,7 @@ export default function EditarUsuarios() {
                         <Input
                             type="text"
                             name="Nombre"
-                            value={newUsuario.Nombre}
+                            value={formValues.Nombre}
                             onChange={handleInputChange}
                             className={`${errors.Nombre ? 'border border-red-600' : ''}`}
                         />
@@ -280,7 +280,7 @@ export default function EditarUsuarios() {
                         <Input
                             type="text"
                             name="Username"
-                            value={newUsuario.Username}
+                            value={formValues.Username}
                             onChange={handleInputChange}
                             className={`${errors.Username ? 'border border-red-600' : ''}`}
                         />
@@ -295,7 +295,7 @@ export default function EditarUsuarios() {
                         <Input
                             type="email"
                             name="Correo"
-                            value={newUsuario.Correo}
+                            value={formValues.Correo}
                             onChange={handleInputChange}
                             className={`${errors.Correo ? 'border border-red-600' : ''}`}
                         />
@@ -310,7 +310,7 @@ export default function EditarUsuarios() {
                         <Input
                             type="text"
                             name="Telefono"
-                            value={newUsuario.Telefono}
+                            value={formValues.Telefono}
                             onChange={handleInputChange}
                             className={`${errors.Telefono ? 'border border-red-600' : ''}`}
                         />
@@ -320,15 +320,27 @@ export default function EditarUsuarios() {
                             </span>
                         )}
                     </div>
+                    
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="Rol">Rol</Label>
-                        <Input
-                            type="text"
-                            name="Rol"
-                            value={newUsuario.Rol}
-                            onChange={handleInputChange}
-                            className={`${errors.Rol ? 'border border-red-600' : ''}`}
-                        />
+                        <Select
+                            value={formValues.Rol}
+                            onValueChange={handleSelectChange}
+                        >
+                            <SelectTrigger
+                                className={`${
+                                    errors.Rol ? 'border border-red-600' : 'w-full'
+                                }`}
+                            >
+                                <SelectValue placeholder="Seleccione un Rol">
+                                    {formValues.Rol || 'Seleccione un Rol'}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Admin">Admin</SelectItem>
+                                <SelectItem value="Usuario">Usuario</SelectItem>
+                            </SelectContent>
+                        </Select>
                         {errors.Rol && (
                             <span className="text-xs text-red-600 mt-1 ml-2">
                                 {errors.Rol}
@@ -340,7 +352,7 @@ export default function EditarUsuarios() {
                         <Input
                             type="text"
                             name="Direccion"
-                            value={newUsuario.Direccion}
+                            value={formValues.Direccion}
                             onChange={handleInputChange}
                             className={`${errors.Direccion ? 'border border-red-600' : ''}`}
                         />
@@ -355,7 +367,7 @@ export default function EditarUsuarios() {
                         <Input
                             type="text"
                             name="DocumentoDeIdentificacion"
-                            value={newUsuario.DocumentoDeIdentificacion}
+                            value={formValues.DocumentoDeIdentificacion}
                             onChange={handleInputChange}
                             className={`${errors.DocumentoDeIdentificacion ? 'border border-red-600' : ''}`}
                         />
@@ -366,7 +378,7 @@ export default function EditarUsuarios() {
                         )}
                     </div>
                     <Button className="my-5 w-[180px]" type="submit">
-                        Agregar Usuario
+                        {selectedUsuario ? 'Guardar Cambios' : 'Agregar Usuario'}
                     </Button>
                 </form>
 
@@ -380,4 +392,3 @@ export default function EditarUsuarios() {
         </>
     );
 }
-    

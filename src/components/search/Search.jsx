@@ -57,8 +57,6 @@ export default function Search() {
       </PopoverContent>
     </Popover>
 
-
-
       <Select>
         <SelectTrigger className="w-[280px]  md:w-[200px] lg:w-[280px]">
           <SelectValue placeholder="Horario" />
