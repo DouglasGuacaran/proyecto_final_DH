@@ -1,5 +1,4 @@
 'use client';
-
 import { Toaster } from '@/components/ui/toaster';
 import {
     Select,
@@ -18,6 +17,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Image from "next/image";
 import { useTheme } from '@/context/ThemeContext';
 import Modal from '../modal/Modal';
+import EditCanchaModal from '../editCanchaModal/editCanchaModal';
 
 // Inicializar cliente de Supabase
 const supabase = createClient();
@@ -324,6 +324,8 @@ export default function Page() {
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     }
+
+    const [selectedCanchaId, setSelectedCanchaId] = useState(null);
     return (
         <>
 
@@ -572,7 +574,7 @@ export default function Page() {
                                     <td className="px-6 py-4">
                                         <div className="flex flex-row items-center justify-center">
                                             <Button
-                                                onClick={() => handleEdit(cancha.id)}
+                                                onClick={() => setSelectedCanchaId(cancha.id)}
                                                 size="icon"
                                                 className={`border ${theme === 'dark' ? 'border-blue-600 text-blue-600 bg-gray-800 hover:bg-blue-600 hover:text-white' : 'border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white'}`}
                                             >
@@ -617,6 +619,13 @@ export default function Page() {
                             ))}
                         </tbody>
                     </table>
+
+                    {selectedCanchaId && (
+                        <EditCanchaModal
+                            canchaId={selectedCanchaId}
+                            onClose={() => setSelectedCanchaId(null)}
+                        />
+                    )}
 
                     {/* paginador */}
                     <div className="flex justify-center mt-6">
