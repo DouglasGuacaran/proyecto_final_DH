@@ -21,6 +21,7 @@ const EditCanchaModal = ({ canchaId, onClose }) => {
     const [selectedCaracteristicas, setSelectedCaracteristicas] = useState([]);
     const [file, setFile] = useState(null);
     const [imagenes, setImagenes] = useState([]);
+    const [disciplinas, setDisciplinas] = useState([]);
     const { toast } = useToast();
     const [errors, setErrors] = useState({
         Nombre: '',
@@ -77,13 +78,24 @@ const EditCanchaModal = ({ canchaId, onClose }) => {
             setCaracteristicas(data);
         }
     }, []);
+    const fetchDisciplinas = useCallback(async () => {
+        const { data, error } = await supabase
+            .from('Disciplina')
+            .select('*');
+        if (error) {
+            console.error('Error fetching disciplinas:', error);
+        } else {
+            setDisciplinas(data);
+        }
+    }, []);
 
     useEffect(() => {
         if (canchaId) {
             fetchCancha(canchaId);
             fetchCaracteristicas();
+            fetchDisciplinas(); // Llamar a la función para obtener las disciplinas
         }
-    }, [canchaId, fetchCancha, fetchCaracteristicas]);
+    }, [canchaId, fetchCancha, fetchCaracteristicas, fetchDisciplinas]);
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -292,10 +304,11 @@ const EditCanchaModal = ({ canchaId, onClose }) => {
                                 <Label>Disciplina</Label>
                                 <select name="Disciplina_id" value={cancha.Disciplina_id} onChange={handleSelectChange} className="block w-full mt-1">
                                     <option value="">Seleccione una disciplina</option>
-                                    {/* Reemplaza con tus opciones */}
-                                    <option value="1">Fútbol</option>
-                                    <option value="2">Basket</option>
-                                    {/* Agrega más disciplinas según sea necesario */}
+                                    {disciplinas.map((disciplina) => (
+                                        <option key={disciplina.id} value={disciplina.id}>
+                                            {disciplina.Nombre}
+                                        </option>
+                                    ))}
                                 </select>
                                 {errors.Disciplina_id && <p className="text-red-500">{errors.Disciplina_id}</p>}
                             </div>
