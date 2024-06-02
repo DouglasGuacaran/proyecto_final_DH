@@ -80,161 +80,163 @@ export default function Page() {
     const handleSelectChange = (value) => {
         setNewCancha((prevState) => ({
             ...prevState,
-            Disciplina_id: value,
+            Disciplina_id:value,
         }));
     };
 
     // Función para agregar una nueva cancha
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+// Función para agregar una nueva cancha
+const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        let newErrors = {
-            Nombre: '',
-            Superficie: '',
-            Tamanio: '',
-            Precio_hora: '',
-            Disciplina_id: '',
-            Imagen: '',
-        };
-
-        // validaciones generales
-        if (newCancha.Nombre === '') {
-            newErrors.Nombre = 'Por favor, ingrese un nombre para la cancha.';
-        }
-        if (newCancha.Superficie === '') {
-            newErrors.Superficie = 'Por favor, ingrese una superficie para la cancha.';
-        }
-        if (newCancha.Tamanio === '') {
-            newErrors.Tamanio = 'Por favor, ingrese un tamaño para la cancha.';
-        }
-        if (newCancha.Precio_hora === '') {
-            newErrors.Precio_hora = 'Por favor, ingrese un precio para la cancha.';
-        }
-        if (newCancha.Disciplina_id === '') {
-            newErrors.Disciplina_id = 'Por favor, seleccione una disciplina para la cancha.';
-        }
-
-        // Validación de la imagen
-        if (files.length === 0) {
-            newErrors.Imagen = 'Por favor, seleccione al menos una imagen para la cancha.';
-        }
-
-        if (
-            newErrors.Nombre ||
-            newErrors.Superficie ||
-            newErrors.Tamanio ||
-            newErrors.Precio_hora ||
-            newErrors.Disciplina_id ||
-            newErrors.Imagen
-        ) {
-            setErrors(newErrors);
-            return;
-        }
-
-        setErrors({
-            Nombre: '',
-            Superficie: '',
-            Tamanio: '',
-            Precio_hora: '',
-            Disciplina_id: '',
-            Imagen: '',
-        });
-
-        let newSupabaseErrors = {
-            canchaExiste: '',
-            insertError: '',
-            uploadError: '',
-            publicUrlError: '',
-            imageError: '',
-        };
-
-        // Verificación de nombre existente
-        const { data: existingCancha, error: existingError } = await supabase
-            .from('Cancha')
-            .select('Nombre')
-            .eq('Nombre', newCancha.Nombre);
-
-        if (existingError || existingCancha.length > 0) {
-            newSupabaseErrors.canchaExiste = 'Una cancha con este nombre ya existe';
-            setSupabaseErrors(newSupabaseErrors);
-            return;
-        }
-
-        // Inserción de nueva cancha
-        const { data: newCanchaData, error: insertError } = await supabase
-            .from('Cancha')
-            .insert([{ ...newCancha }])
-            .select();
-
-        if (insertError) {
-            newSupabaseErrors.insertError = 'Error al insertar la cancha';
-            setSupabaseErrors(newSupabaseErrors);
-            return;
-        }
-
-        // Subir imágenes
-        const urls = [];
-        for (const file of files) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}-${file.name}`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('imagenes_canchas')
-                .upload(fileName, file);
-
-            if (uploadError) {
-                newSupabaseErrors.uploadError = 'Error al subir la imagen';
-                setSupabaseErrors(newSupabaseErrors);
-                return;
-            }
-
-            // Obtener URL pública de la imagen
-            const {
-                data: { publicUrl },
-                error: publicUrlError,
-            } = supabase.storage.from('imagenes_canchas').getPublicUrl(fileName);
-
-            if (publicUrlError) {
-                newSupabaseErrors.publicUrlError = 'Error al obtener la URL pública de la imagen';
-                setSupabaseErrors(newSupabaseErrors);
-                return;
-            }
-
-            urls.push(publicUrl);
-        }
-
-        // Inserción de imágenes
-        const { error: imageError } = await supabase
-            .from('Imagen_cancha')
-            .insert(urls.map(url => ({ Cancha_id: newCanchaData[0].id, Url_img: url })));
-
-        if (imageError) {
-            newSupabaseErrors.imageError = 'Error al insertar datos de imagen';
-            setSupabaseErrors(newSupabaseErrors);
-            return;
-        }
-
-        toast({
-            title: 'Nueva Cancha',
-            description: `La cancha ${newCancha.Nombre} fue agregada correctamente!`,
-        });
-
-        setSupabaseErrors({
-            canchaExiste: '',
-            insertError: '',
-            uploadError: '',
-            publicUrlError: '',
-            imageError: '',
-        });
-        setNewCancha({
-            Nombre: '',
-            Superficie: '',
-            Tamanio: '',
-            Precio_hora: '',
-            Disciplina_id: '',
-        });
-        setFiles([]);
-        fetchCanchas();
+    let newErrors = {
+        Nombre: '',
+        Superficie: '',
+        Tamanio: '',
+        Precio_hora: '',
+        Disciplina_id: '',
+        Imagen: '',
     };
+
+    // validaciones generales
+    if (newCancha.Nombre === '') {
+        newErrors.Nombre = 'Por favor, ingrese un nombre para la cancha.';
+    }
+    if (newCancha.Superficie === '') {
+        newErrors.Superficie = 'Por favor, ingrese una superficie para la cancha.';
+    }
+    if (newCancha.Tamanio === '') {
+        newErrors.Tamanio = 'Por favor, ingrese un tamaño para la cancha.';
+    }
+    if (newCancha.Precio_hora === '') {
+        newErrors.Precio_hora = 'Por favor, ingrese un precio para la cancha.';
+    }
+    if (newCancha.Disciplina_id === '') {
+        newErrors.Disciplina_id = 'Por favor, seleccione una disciplina para la cancha.';
+    }
+
+    // Validación de la imagen
+    if (files.length === 0) {
+        newErrors.Imagen = 'Por favor, seleccione al menos una imagen para la cancha.';
+    }
+
+    if (
+        newErrors.Nombre ||
+        newErrors.Superficie ||
+        newErrors.Tamanio ||
+        newErrors.Precio_hora ||
+        newErrors.Disciplina_id ||
+        newErrors.Imagen
+    ) {
+        setErrors(newErrors);
+        return;
+    }
+
+    setErrors({
+        Nombre: '',
+        Superficie: '',
+        Tamanio: '',
+        Precio_hora: '',
+        Disciplina_id: '',
+        Imagen: '',
+    });
+
+    let newSupabaseErrors = {
+        canchaExiste: '',
+        insertError: '',
+        uploadError: '',
+        publicUrlError: '',
+        imageError: '',
+    };
+
+    // Verificación de nombre existente
+    const { data: existingCancha, error: existingError } = await supabase
+        .from('Cancha')
+        .select('Nombre')
+        .eq('Nombre', newCancha.Nombre);
+
+    if (existingError || existingCancha.length > 0) {
+        newSupabaseErrors.canchaExiste = 'Una cancha con este nombre ya existe';
+        setSupabaseErrors(newSupabaseErrors);
+        return;
+    }
+
+    // Inserción de nueva cancha
+    const { data: newCanchaData, error: insertError } = await supabase
+        .from('Cancha')
+        .insert([{ ...newCancha }])
+        .select();
+
+    if (insertError) {
+        newSupabaseErrors.insertError = 'Error al insertar la cancha';
+        setSupabaseErrors(newSupabaseErrors);
+        return;
+    }
+
+    // Subir imágenes
+    const urls = [];
+    for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${file.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('imagenes_canchas')
+            .upload(fileName, file);
+
+        if (uploadError) {
+            newSupabaseErrors.uploadError = 'Error al subir la imagen';
+            setSupabaseErrors(newSupabaseErrors);
+            return;
+        }
+
+        // Obtener URL pública de la imagen
+        const {
+            data: { publicUrl },
+            error: publicUrlError,
+        } = supabase.storage.from('imagenes_canchas').getPublicUrl(fileName);
+
+        if (publicUrlError) {
+            newSupabaseErrors.publicUrlError = 'Error al obtener la URL pública de la imagen';
+            setSupabaseErrors(newSupabaseErrors);
+            return;
+        }
+
+        urls.push(publicUrl);
+    }
+
+    // Inserción de imágenes
+    const { error: imageError } = await supabase
+        .from('Imagen_cancha')
+        .insert(urls.map(url => ({ Cancha_id: newCanchaData[0].id, Url_img: url })));
+
+    if (imageError) {
+        newSupabaseErrors.imageError = 'Error al insertar datos de imagen';
+        setSupabaseErrors(newSupabaseErrors);
+        return;
+    }
+
+    toast({
+        title: 'Nueva Cancha',
+        description: `La cancha ${newCancha.Nombre} fue agregada correctamente!`,
+    });
+
+    setSupabaseErrors({
+        canchaExiste: '',
+        insertError: '',
+        uploadError: '',
+        publicUrlError: '',
+        imageError: '',
+    });
+    setNewCancha({
+        Nombre: '',
+        Superficie: '',
+        Tamanio: '',
+        Precio_hora: '',
+        Disciplina_id: '',
+    });
+    setFiles([]);
+    setPreviews([]); // Asegúrate de limpiar las previsualizaciones de imágenes también
+    fetchCanchas();
+};
 
     // Función para eliminar una cancha
     const handleDelete = async (id) => {
@@ -373,32 +375,33 @@ export default function Page() {
                                             ))
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 flex space-x-2 flex-wrap">
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-row items-center justify-center">
                                         <Button
                                             onClick={() => handleEdit(cancha.id)}
                                             size="icon"
                                             className={`border ${theme === 'dark' ? 'border-blue-600 text-blue-600 bg-gray-800 hover:bg-blue-600 hover:text-white' : 'border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white'}`}
-                                        >
+                                            >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
                                                 viewBox="0 0 24 24"
-                                                strokeWidth="1.5"
+                                                fill="none"
                                                 stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
                                                 className="w-5 h-5"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M15.232 6.1l-1.232 1.232 4.768 4.768 1.232-1.232a2.5 2.5 0 0 0 0-3.536L18.768 6.1a2.5 2.5 0 0 0-3.536 0zm-4.768 6.536L9.232 16.1 4.768 11.636 8.768 7.636l2.5 2.5L8.768 11.636 9.232 16.1z"
-                                                />
+                                                >
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                                             </svg>
                                         </Button>
+                                        
                                         <Button
                                             onClick={() => handleDelete(cancha.id)}
                                             size="icon"
                                             className={`border ${theme === 'dark' ? 'border-red-600 text-red-600 bg-gray-800 hover:bg-red-600 hover:text-white' : 'border-red-600 text-red-600 bg-white hover:bg-red-600 hover:text-white'}`}
-                                        >
+                                            >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
@@ -406,14 +409,15 @@ export default function Page() {
                                                 strokeWidth="1.5"
                                                 stroke="currentColor"
                                                 className="w-5 h-5"
-                                            >
+                                                >
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
                                                     d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                />
+                                                    />
                                             </svg>
                                         </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -493,19 +497,22 @@ export default function Page() {
                             </span>
                         )}
                     </div>
+
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="Disciplina_id">Disciplina</Label>
                         <Select
-                            name="Disciplina_id"
-                            value={newCancha.Disciplina_id}
-                            onValueChange={handleSelectChange}
+                        name='Disciplina_id'
+                        value={newCancha.Disciplina_id}
+                        onValueChange={handleSelectChange}
                         >
                             <SelectTrigger
                                 className={`${
-                                    errors.Disciplina_id ? 'border border-red-600' : ''
+                                    errors.Disciplina_id ? 'border border-red-600' : 'w-full'
                                 }`}
-                            >
-                                <SelectValue placeholder="Seleccione una disciplina" />
+                                >
+                                <SelectValue placeholder='Seleccione una Disciplina'>
+                                    {newCancha.Disciplina_id ? canchas.find(cancha => cancha.id === newCancha.Cancha_id)?.Nombre : 'Seleccione una Disciplina'}
+                                </SelectValue> 
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="1">Fútbol</SelectItem>
@@ -548,7 +555,7 @@ export default function Page() {
                                         onClick={() => handleRemoveImage(index)}
                                         className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1"
                                     >
-                                        ×
+                                        X
                                     </button>
                                 </div>
                             ))}

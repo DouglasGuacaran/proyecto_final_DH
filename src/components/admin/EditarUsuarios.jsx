@@ -5,6 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/toaster';
 import { useTheme } from '@/context/ThemeContext';
 import { createClient } from '@/utils/supabase/client';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export default function EditarUsuarios() {
     const { theme } = useTheme();
@@ -320,15 +327,24 @@ export default function EditarUsuarios() {
                             </span>
                         )}
                     </div>
+                    
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="Rol">Rol</Label>
-                        <Input
-                            type="text"
-                            name="Rol"
-                            value={newUsuario.Rol}
-                            onChange={handleInputChange}
-                            className={`${errors.Rol ? 'border border-red-600' : ''}`}
-                        />
+                        <Select
+                        >
+                            <SelectTrigger
+                                className={`${
+                                    errors.Rol ? 'border border-red-600' : 'w-full'
+                                }`}
+                            >
+                                <SelectValue placeholder="Seleccione un Rol">
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem  value="Admin">Admin</SelectItem>
+                                <SelectItem  value="Usuario">Usuario</SelectItem>
+                            </SelectContent>
+                        </Select>
                         {errors.Rol && (
                             <span className="text-xs text-red-600 mt-1 ml-2">
                                 {errors.Rol}

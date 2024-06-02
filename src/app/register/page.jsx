@@ -79,6 +79,7 @@ const Page = () => {
             }
 
             alert('Registro exitoso!');
+            window.location.href = '/login';
         } catch (error) {
             console.error('Error inesperado:', error);
             alert('Error inesperado: ' + error.message);
