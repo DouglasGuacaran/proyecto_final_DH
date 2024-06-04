@@ -275,7 +275,7 @@ export default function EditarCancha() {
                     </h1>
                     <div className="mt-10 px-6">
                         <Button onClick={() => router.push('/')}>Volver a la edición</Button>
-                        
+
                         <form
                             onSubmit={handleUpdate}
                             className="max-w-xl ml-10 flex flex-col gap-5"
