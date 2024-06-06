@@ -15,12 +15,51 @@ import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import ModalReservas from '@/components/modal/ModalReservas';
+import { useUsuarios } from '@/context/UsuariosProvider';
 
 export default function Page() {
   const { id } = useParams();
   const [cancha, setCancha] = useState({});
   const { theme } = useTheme();
   const { user } = useAuth(); // Accede a la información del usuario
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [usuarioId, setUsuarioId] = useState(null);
+  const { supabase } = useUsuarios();
+
+  useEffect(() => {
+    const fetchUsuarioId = async () => {
+      const supabase = createClient();
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      console.log("Authenticated user:", user);
+
+      if (userError) {
+        console.error('Error fetching authenticated user:', userError);
+        return;
+      }
+
+      if (user && user.user && user.user.id) {
+        const { data, error } = await supabase
+          .from('Usuario')
+          .select('id')
+          .eq('uid', user.user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching usuario ID:', error);
+        } else {
+          setUsuarioId(data.id);
+          console.log("Fetched usuario ID:", data.id);
+        }
+      } else {
+        console.error('User data is not in expected format:', user);
+      }
+    };
+
+    fetchUsuarioId();
+  }, []);
+
 
   useEffect(() => {
     const getCanchaWithId = async (id) => {
@@ -67,6 +106,36 @@ export default function Page() {
     slidesToShow: 1,
     slidesToScroll: 1,
     arrows: false,
+  };
+
+  const handleModalOpen = () => setIsModalOpen(true)
+  const handleModalClose = () => setIsModalOpen(false);
+
+  const handleReserve = async ({ startDateTime, endDateTime }) => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from('Reserva')
+      .insert([
+        {
+          Cancha_id: cancha.id,
+          Usuario_id: usuarioId,
+          Fecha_hora_inicio: startDateTime,
+          Fecha_hora_fin: endDateTime,
+          Estado: 'Reservado'
+        }
+      ])
+      .select()
+
+    console.log(usuarioId);
+    console.log(cancha.id);
+    console.log(startDateTime);
+    console.log(endDateTime);
+    if (error) {
+      console.error('Error creating reservation:', error);
+    } else {
+      console.log('Reservation created:', data);
+    }
   };
 
   return (
@@ -146,11 +215,16 @@ export default function Page() {
           </ul>
 
           {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
-            <Button className='w-full'>Reservar</Button>
+            <Button className='w-full' onClick={handleModalOpen}>Reservar</Button>
           )}
         </div>
       </main>
       <Footer />
+
+      <ModalReservas isOpen={isModalOpen} onClose={handleModalClose} onReserve={handleReserve}
+        canchaName={Nombre}>
+        <h2 className="text-2xl font-bold mb-4 text-center">Reserva en {Nombre}</h2>
+      </ModalReservas>
     </>
   );
 }
