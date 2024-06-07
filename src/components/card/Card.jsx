@@ -6,6 +6,9 @@ import Image from 'next/image';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { useState, useEffect } from 'react';
 
 const Card = ({ dataCancha }) => {
   const { theme } = useTheme();
@@ -21,8 +24,50 @@ const Card = ({ dataCancha }) => {
     arrows: false,
   };
 
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    // Cargar el estado del favorito desde localStorage
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || {};
+    if (favorites[user?.id]?.includes(id)) {
+      setIsFavorite(true);
+    }
+  }, [user, id]);
+
+  const handleFavoriteClick = () => {
+    setIsFavorite(!isFavorite);
+
+    // Guardar en localStorage
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || {};
+    if (!favorites[user.id]) {
+      favorites[user.id] = [];
+    }
+
+    if (isFavorite) {
+      // Eliminar de favoritos
+      favorites[user.id] = favorites[user.id].filter(favId => favId !== id);
+    } else {
+      // Agregar a favoritos
+      favorites[user.id].push(id);
+    }
+
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  };
+
   return (
     <div className={`w-full max-w-sm ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-200'} rounded-lg shadow flex flex-col justify-between`}>
+      
+      <div className=' flex max-w-full items-center justify-end mt-5 mb-5 mr-10'>
+      {user && ( // Mostrar el botón de Favorito solo si el usuario está logueado
+          <button 
+            className={`focus:outline-none ${isFavorite ? 'text-red-500' : 'text-gray-500'}`}
+            onClick={handleFavoriteClick}
+          >
+            <FontAwesomeIcon icon={faHeart} size="lg" />
+          </button>
+        )}
+      </div>
+      
       {Imagen_cancha.length > 1 ? (
         <Slider {...settings}>
           {Imagen_cancha.map((imagen, index) => (
