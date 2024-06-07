@@ -29,7 +29,6 @@ export default function Navbar() {
           console.error('Error fetching user data:', error);
         } else {
           setRol(data.Rol);
-          setUserName(data.Username.charAt(0).toUpperCase() + data.Username.slice(1) || '');
         }
       }
     };
