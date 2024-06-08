@@ -24,9 +24,9 @@ export default function Page() {
   const { theme } = useTheme();
   const { user } = useAuth(); // Accede a la información del usuario
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [usuarioId, setUsuarioId] = useState(null);
   const { supabase } = useUsuarios();
+  const [reservas, setReservas] = useState([]);
 
   useEffect(() => {
     const fetchUsuarioId = async () => {
@@ -94,6 +94,25 @@ export default function Page() {
 
     if (id) {
       getCanchaWithId(id);
+    }
+  }, [id]);
+  useEffect(() => {
+    const getReservas = async (canchaId) => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('Reserva')
+        .select('*')
+        .eq('Cancha_id', canchaId);
+
+      if (error) {
+        console.error('Error fetching reservas:', error);
+      } else {
+        setReservas(data);
+      }
+    };
+
+    if (id) {
+      getReservas(id);
     }
   }, [id]);
 
@@ -222,7 +241,7 @@ export default function Page() {
       <Footer />
 
       <ModalReservas isOpen={isModalOpen} onClose={handleModalClose} onReserve={handleReserve}
-        canchaName={Nombre}>
+        canchaName={Nombre} existingReservations={reservas}>
         <h2 className="text-2xl font-bold mb-4 text-center">Reserva en {Nombre}</h2>
       </ModalReservas>
     </>
