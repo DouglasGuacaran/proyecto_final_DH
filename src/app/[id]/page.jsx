@@ -19,6 +19,9 @@ import ModalReservas from '@/components/modal/ModalReservas';
 import { useUsuarios } from '@/context/UsuariosProvider';
 import { CalendarioDisponibilidad } from '@/components/ui/calendarioDisponibilidad';
 import { addMonths } from "date-fns";
+import { FaShareAlt } from 'react-icons/fa'; // Importar el icono de compartir
+import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, WhatsappIcon } from 'react-share';
+
 
 export default function Page() {
   const { id } = useParams();
@@ -26,6 +29,7 @@ export default function Page() {
   const { theme } = useTheme();
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false); // Estado para la visibilidad del modal de compartir
   const [usuarioId, setUsuarioId] = useState(null);
   const { supabase } = useUsuarios();
   const [reservas, setReservas] = useState([]);
@@ -156,7 +160,7 @@ export default function Page() {
     arrows: false,
   };
 
-  const handleModalOpen = () => setIsModalOpen(true)
+  const handleModalOpen = () => setIsModalOpen(true);
   const handleModalClose = () => setIsModalOpen(false);
 
   const handleReserve = async ({ startDateTime, endDateTime }) => {
@@ -185,6 +189,12 @@ export default function Page() {
       console.log('Reservation created:', data);
     }
   };
+
+  const shareUrl = `http://localhost:3000/${id}`; // Cambiar a la URL real de tu sitio
+  const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
+
+  const handleShareModalOpen = () => setIsShareModalOpen(true);
+  const handleShareModalClose = () => setIsShareModalOpen(false);
 
   return (
     <>
@@ -244,7 +254,12 @@ export default function Page() {
 
 
         <div className={`w-full max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6`}>
-          <h6 className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}>Características</h6>
+          <div className="flex justify-between items-center">
+            <h6 className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}>Características</h6>
+            <button onClick={handleShareModalOpen} className="ml-2 text-black-500">
+              <FaShareAlt size={24} />
+            </button>
+          </div>
 
           <table className={`w-full mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
             <thead>
@@ -283,6 +298,37 @@ export default function Page() {
         canchaName={Nombre} existingReservations={reservas} closeModal={handleModalClose}>
         <h2 className="text-2xl font-bold mb-4 text-center">Reserva en {Nombre}</h2>
       </ModalReservas>
+
+      {isShareModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className={`p-6 bg-white rounded-lg shadow-lg ${theme === 'dark' ? 'text-black' : ''}`}>
+            <h3 className="text-xl mb-4">Compartir {Nombre}</h3>
+            <div className="relative w-full h-64 mb-4">
+              <Image
+                src={Imagen_cancha[0]?.Url_img || '/default-image.jpg'}
+                alt={`Imagen de la Cancha`}
+                layout="fill"
+                objectFit="cover"
+                className="rounded-lg"
+              />
+            </div>
+            <div className="flex justify-around">
+              <FacebookShareButton url={shareUrl} quote={shareTitle}>
+                <FacebookIcon size={40} round />
+              </FacebookShareButton>
+              <TwitterShareButton url={shareUrl} title={shareTitle}>
+                <TwitterIcon size={40} round />
+              </TwitterShareButton>
+              <WhatsappShareButton url={shareUrl} title={shareTitle}>
+                <WhatsappIcon size={40} round />
+              </WhatsappShareButton>
+            </div>
+            <button onClick={handleShareModalClose} className="mt-4 w-full py-2 bg-blue-500 text-white rounded-lg">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

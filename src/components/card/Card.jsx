@@ -9,11 +9,14 @@ import "slick-carousel/slick/slick-theme.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
+import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, WhatsappIcon } from 'react-share';
+import { FaShareAlt } from 'react-icons/fa'; // Importar el icono de compartir
 
 const Card = ({ dataCancha }) => {
   const { theme } = useTheme();
   const { user } = useAuth(); // Acceder a la información del usuario
   const { id, Nombre, Precio_hora, Imagen_cancha } = dataCancha;
+  const [shareVisible, setShareVisible] = useState(false);
 
   const settings = {
     dots: true,
@@ -23,7 +26,6 @@ const Card = ({ dataCancha }) => {
     slidesToScroll: 1,
     arrows: false,
   };
-
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
@@ -53,6 +55,9 @@ const Card = ({ dataCancha }) => {
 
     localStorage.setItem('favorites', JSON.stringify(favorites));
   };
+
+  const shareUrl = `http://localhost:3000/${id}`; // Cambiar a la URL real de tu sitio
+  const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
 
   return (
     <div className={`w-full max-w-sm ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-200'} rounded-lg shadow flex flex-col justify-between`}>
@@ -97,9 +102,28 @@ const Card = ({ dataCancha }) => {
       )}
 
       <div className="mx-5 my-5">
-        <h5 className="text-lg font-semibold tracking-tight w-full truncate ">
-          {Nombre}
-        </h5>
+        <div className="flex justify-between items-center">
+          <h5 className="text-lg font-semibold tracking-tight w-full truncate">
+            {Nombre}
+          </h5>
+          <button onClick={() => setShareVisible(!shareVisible)} className="ml-2 text-black-500">
+            <FaShareAlt size={24} />
+          </button>
+        </div>
+
+        {shareVisible && (
+          <div className="flex justify-evenly my-2">
+            <FacebookShareButton url={shareUrl} quote={shareTitle}>
+              <FacebookIcon size={32} round />
+            </FacebookShareButton>
+            <TwitterShareButton url={shareUrl} title={shareTitle}>
+              <TwitterIcon size={32} round />
+            </TwitterShareButton>
+            <WhatsappShareButton url={shareUrl} title={shareTitle}>
+              <WhatsappIcon size={32} round />
+            </WhatsappShareButton>
+          </div>
+        )}
 
         <div className="flex items-center justify-center mt-4">
           <span className="text-xl font-bold">
@@ -112,6 +136,7 @@ const Card = ({ dataCancha }) => {
               Detalle
             </Button>
           </Link>
+          
           {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
             <Button>Reservar</Button>
           )}
