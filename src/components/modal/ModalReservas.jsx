@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-const ModalReservas = ({ isOpen, onClose, onReserve, canchaName, existingReservations  }) => {
+const ModalReservas = ({ isOpen, onClose, onReserve, canchaName, existingReservations, closeModal }) => {
   const [date, setDate] = useState(null);
   const [timeSlot, setTimeSlot] = useState('');
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
@@ -45,6 +45,8 @@ const ModalReservas = ({ isOpen, onClose, onReserve, canchaName, existingReserva
       const formattedEndDateTime = format(endDateTime, 'yyyy-MM-dd HH:mm:ss');
 
       onReserve({ startDateTime: formattedStartDateTime, endDateTime: formattedEndDateTime });
+
+      closeModal();
     } else {
       alert('Por favor, selecciona una fecha y un horario.');
     }

@@ -17,22 +17,29 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ModalReservas from '@/components/modal/ModalReservas';
 import { useUsuarios } from '@/context/UsuariosProvider';
+import { CalendarioDisponibilidad } from '@/components/ui/calendarioDisponibilidad';
+import { addMonths } from "date-fns";
 
 export default function Page() {
   const { id } = useParams();
   const [cancha, setCancha] = useState({});
   const { theme } = useTheme();
-  const { user } = useAuth(); // Accede a la información del usuario
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [usuarioId, setUsuarioId] = useState(null);
   const { supabase } = useUsuarios();
   const [reservas, setReservas] = useState([]);
+  const today = new Date();
+  const nextMonth = addMonths(today, 1);
+  const [month1, setMonth1] = useState(today);
+  const [month2, setMonth2] = useState(nextMonth);
+
 
   useEffect(() => {
     const fetchUsuarioId = async () => {
       const supabase = createClient();
       const { data: user, error: userError } = await supabase.auth.getUser();
-      console.log("Authenticated user:", user);
+      // console.log("Authenticated user:", user);
 
       if (userError) {
         console.error('Error fetching authenticated user:', userError);
@@ -50,7 +57,7 @@ export default function Page() {
           console.error('Error fetching usuario ID:', error);
         } else {
           setUsuarioId(data.id);
-          console.log("Fetched usuario ID:", data.id);
+          // console.log("Fetched usuario ID:", data.id);
         }
       } else {
         console.error('User data is not in expected format:', user);
@@ -96,13 +103,14 @@ export default function Page() {
       getCanchaWithId(id);
     }
   }, [id]);
+
   useEffect(() => {
     const getReservas = async (canchaId) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('Reserva')
         .select('*')
-        .eq('Cancha_id', canchaId);
+        .eq('Cancha_id', id);
 
       if (error) {
         console.error('Error fetching reservas:', error);
@@ -115,6 +123,27 @@ export default function Page() {
       getReservas(id);
     }
   }, [id]);
+  // console.log(reservas);
+  // console.log(id);
+
+  const getReservationsByDay = (reservations) => {
+    const pad = (num) => (num < 10 ? `0${num}` : num);
+    const reservationsByDay = {};
+    reservations.forEach((reservation) => {
+      const reservationDate = new Date(reservation.Fecha_hora_inicio);
+      const dateString = `${pad(reservationDate.getDate())}/${pad(reservationDate.getMonth() + 1)}/${reservationDate.getFullYear()}`;
+      if (reservationsByDay[dateString]) {
+        reservationsByDay[dateString]++;
+      } else {
+        reservationsByDay[dateString] = 1;
+      }
+    });
+    return reservationsByDay;
+  };
+
+  const reservationsByDay = getReservationsByDay(reservas);
+  console.log("Reservations by day:", reservationsByDay);
+
 
   const { Nombre, Precio_hora, Superficie, Tamanio, Caracteristicas, Imagen_cancha } = cancha;
 
@@ -204,6 +233,16 @@ export default function Page() {
         )}
 
         </div>
+
+        <div className={`w-full max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6`}>
+          <h6 className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}>Proximas fechas disponibles</h6>
+          <div className="flex space-x-4 justify-center">
+            <CalendarioDisponibilidad month={month1} onMonthChange={setMonth1} reservationsByDay={reservationsByDay} />
+            <CalendarioDisponibilidad month={month2} onMonthChange={setMonth2} reservationsByDay={reservationsByDay} />
+          </div>
+        </div>
+
+
         <div className={`w-full max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6`}>
           <h6 className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}>Características</h6>
 
@@ -241,7 +280,7 @@ export default function Page() {
       <Footer />
 
       <ModalReservas isOpen={isModalOpen} onClose={handleModalClose} onReserve={handleReserve}
-        canchaName={Nombre} existingReservations={reservas}>
+        canchaName={Nombre} existingReservations={reservas} closeModal={handleModalClose}>
         <h2 className="text-2xl font-bold mb-4 text-center">Reserva en {Nombre}</h2>
       </ModalReservas>
     </>
