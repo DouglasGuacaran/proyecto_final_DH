@@ -7,7 +7,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useCanchas } from '@/context/CanchasProvider';
 import { createClient } from '@/utils/supabase/client';
@@ -26,21 +26,38 @@ export default function Page() {
     const { theme } = useTheme();
     const [files, setFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
+    const [canchas2, setCanchas] = useState([]);
+    useEffect(() => {
+    const cargarCanchas = async () => {
+        let { data: Cancha, error } = await supabase
+        .from('Cancha')
+        .select('*, Superficie_id (Nombre), Disciplina (Nombre) , Imagen_cancha (Url_img)');
+
+        if (error) console.error('Error cargando canchas:', error);
+        else setCanchas(Cancha);
+    };
+
+    cargarCanchas();
+    }, []);
+
     const { canchas, fetchCanchas } = useCanchas();
     const [newCancha, setNewCancha] = useState({
         Nombre: '',
-        Superficie: '',
+        // Superficie: '',
         Tamanio: '',
         Precio_hora: '',
         Disciplina_id: '',
+        Superficie_id: '',
+        Caracteristicas: [],
     });
     const [errors, setErrors] = useState({
         Nombre: '',
-        Superficie: '',
+        // Superficie: '',
         Tamanio: '',
         Precio_hora: '',
         Disciplina_id: '',
         Imagen: '',
+        Superficie_id: '',
     });
     const [supabaseErrors, setSupabaseErrors] = useState({
         canchaExiste: '',
@@ -78,12 +95,21 @@ export default function Page() {
     };
 
     // Manejar cambio en el select
-    const handleSelectChange = (value) => {
+    const handleDisciplinaChange = (value) => {
         setNewCancha((prevState) => ({
             ...prevState,
             Disciplina_id: value,
         }));
     };
+
+    const handleSuperficieChange = (value) => {
+        setNewCancha((prevState) => ({
+            ...prevState,
+            Superficie_id: value,
+        }));
+    };
+
+
 
     // Función para agregar una nueva cancha
     // Función para agregar una nueva cancha
@@ -92,20 +118,21 @@ export default function Page() {
 
         let newErrors = {
             Nombre: '',
-            Superficie: '',
+            // Superficie: '',
             Tamanio: '',
             Precio_hora: '',
             Disciplina_id: '',
             Imagen: '',
+            Superficie_id: '',
         };
 
         // validaciones generales
         if (newCancha.Nombre === '') {
             newErrors.Nombre = 'Por favor, ingrese un nombre para la cancha.';
         }
-        if (newCancha.Superficie === '') {
-            newErrors.Superficie = 'Por favor, ingrese una superficie para la cancha.';
-        }
+        // if (newCancha.Superficie === '') {
+        //     newErrors.Superficie = 'Por favor, ingrese una superficie para la cancha.';
+        // }
         if (newCancha.Tamanio === '') {
             newErrors.Tamanio = 'Por favor, ingrese un tamaño para la cancha.';
         }
@@ -114,6 +141,9 @@ export default function Page() {
         }
         if (newCancha.Disciplina_id === '') {
             newErrors.Disciplina_id = 'Por favor, seleccione una disciplina para la cancha.';
+        }
+        if (newCancha.Superficie_id === '') {
+            newErrors.Superficie_id = 'Por favor, seleccione una superficie para la cancha.';
         }
 
         // Validación de la imagen
@@ -140,6 +170,7 @@ export default function Page() {
             Precio_hora: '',
             Disciplina_id: '',
             Imagen: '',
+            Superficie_id: '',
         });
 
         let newSupabaseErrors = {
@@ -229,10 +260,10 @@ export default function Page() {
         });
         setNewCancha({
             Nombre: '',
-            Superficie: '',
             Tamanio: '',
             Precio_hora: '',
             Disciplina_id: '',
+            Superficie_id: '',
         });
         setFiles([]);
         setPreviews([]); // Asegúrate de limpiar las previsualizaciones de imágenes también
@@ -311,21 +342,72 @@ export default function Page() {
     };
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    const itemsPerPage = 10;
 
     // calcular elementos
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = canchas.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = canchas2.slice(indexOfFirstItem, indexOfLastItem);
 
     // total pags
-    const totalPages = Math.ceil(canchas.length / itemsPerPage);
+    const totalPages = Math.ceil(canchas2.length / itemsPerPage);
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     }
 
     const [selectedCanchaId, setSelectedCanchaId] = useState(null);
+
+    // cargar disciplinas
+    const [disciplinas, setDisciplinas] = useState([]);
+    const [superficie, setSuperficie] = useState([]);
+    useEffect(() => {
+    const cargarDisciplinas = async () => {
+        let { data: Disciplina, error } = await supabase
+        .from('Disciplina')
+        .select('*');
+
+        if (error) console.error('Error cargando disciplinas:', error);
+        else setDisciplinas(Disciplina);
+    };
+
+    cargarDisciplinas();
+    }, []);
+
+    useEffect(() => {
+        const cargarSuperficie = async () => {
+            let { data: Superficie, error } = await supabase
+                .from('Superficie')
+                .select('*');
+
+            if (error) console.error('Error cargando superficies:', error);
+            else setSuperficie(Superficie);
+        };
+
+        cargarSuperficie();
+    }, []);
+    const [caracteristicas, setCaracteristicas] = useState([]);
+    const handleCaracteristicasChange = (event) => {
+        const { name, checked } = event.target;
+        if (checked) {
+            setCaracteristicas(prev => {
+                const newCaracteristicas = [...prev, name];
+                setNewCancha(prevCancha => ({ ...prevCancha, Caracteristicas: newCaracteristicas }));
+                return newCaracteristicas;
+            });
+        } else {
+            setCaracteristicas(prev => {
+                const newCaracteristicas = prev.filter(caracteristica => caracteristica !== name);
+                setNewCancha(prevCancha => ({ ...prevCancha, Caracteristicas: newCaracteristicas }));
+                return newCaracteristicas;
+            });
+        }
+    };
+    console.log(caracteristicas);
+    // console.log(superficie);
+    // console.log(disciplinas);
+    console.log(newCancha);
+
     return (
         <>
 
@@ -362,21 +444,6 @@ export default function Page() {
                             )}
                         </div>
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="Superficie">Tipo de Superficie</Label>
-                            <Input
-                                type="text"
-                                name="Superficie"
-                                value={newCancha.Superficie}
-                                onChange={handleInputChange}
-                                className={`${errors.Superficie ? 'border border-red-600' : ''}`}
-                            />
-                            {errors.Superficie && (
-                                <span className="text-xs text-red-600 mt-1 ml-2">
-                                    {errors.Superficie}
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="Tamanio">Tamaño</Label>
                             <Input
                                 type="text"
@@ -406,30 +473,120 @@ export default function Page() {
                             )}
                         </div>
 
+                        <div className="flex justify-between">
+                            <div className="flex flex-col">
+                                <Label htmlFor="wifi">Wifi</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="wifi"
+                                    onChange={handleCaracteristicasChange}
+                                />
+                                <Label htmlFor="estacionamiento">Estacionamiento</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="estacionamiento"
+                                    onChange={handleCaracteristicasChange}
+                                />
+                                {/* Agrega los checkboxes restantes aquí */}
+                                <Label htmlFor="comida">Bar/Comida</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="comida"
+                                    onChange={handleCaracteristicasChange}
+                                />
+                                <Label htmlFor="arriendo">Arriendo Equipo</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="arriendo"
+                                    onChange={handleCaracteristicasChange}
+                                />
+
+                            </div>
+                            <div className="flex flex-col">
+                                <Label htmlFor="zonaNinos">Zona de niños</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="zonaNinos"
+                                    onChange={handleCaracteristicasChange}
+                                />
+                                <Label htmlFor="accesoDiscapacitados">Acceso para discapacitados</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="accesoDiscapacitados"
+                                    onChange={handleCaracteristicasChange}
+                                />
+                                {/* Agrega los checkboxes restantes aquí */}
+                                <Label htmlFor="camarines">Camarines</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="camarines"
+                                    onChange={handleCaracteristicasChange}
+                                />
+                                <Label htmlFor="espectadores">Zona espectadores</Label>
+                                <Input
+                                    type="checkbox"
+                                    name="espectadores"
+                                    onChange={handleCaracteristicasChange}
+                                />
+
+                            </div>
+                        </div>
+
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="Disciplina_id">Disciplina</Label>
                             <Select
-                                name='Disciplina_id'
-                                value={newCancha.Disciplina_id}
-                                onValueChange={handleSelectChange}
-                            >
-                                <SelectTrigger
-                                    className={`${errors.Disciplina_id ? 'border border-red-600' : 'w-full'
-                                        }`}
+                                    name='Disciplina_id'
+                                    value={canchas2.Disciplina_id}
+                                    onValueChange={(value) => handleDisciplinaChange(value)}
                                 >
-                                    <SelectValue placeholder='Seleccione una Disciplina'>
-                                        {newCancha.Disciplina_id ? canchas.find(cancha => cancha.id === newCancha.Cancha_id)?.Nombre : 'Seleccione una Disciplina'}
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1">Fútbol</SelectItem>
-                                    <SelectItem value="2">Tennis</SelectItem>
-                                    <SelectItem value="3">Paddle</SelectItem>
-                                </SelectContent>
+                                    <SelectTrigger
+                                        className='w-full'
+                                    >
+                                        <SelectValue placeholder='Seleccione una Disciplina'>
+                                            {canchas2.Disciplina_id ? disciplinas.find(disciplina => disciplina.id === canchas2.Disciplina_id)?.Nombre : 'Seleccione una Disciplina'}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {disciplinas.map((disciplina) => (
+                                            <SelectItem key={disciplina.id} value={disciplina.id}>
+                                                {disciplina.Nombre}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
                             </Select>
                             {errors.Disciplina_id && (
                                 <span className="text-xs text-red-600 mt-1 ml-2">
                                     {errors.Disciplina_id}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col space-y-1.5">
+                            <Label htmlFor="Superficie_id">Superficie</Label>
+                            <Select
+                                name='Superficie_id'
+                                value={superficie.Superficie_id}
+                                onValueChange={(value) => handleSuperficieChange(value)}
+                            >
+                                <SelectTrigger
+                                    className={`${errors.Superficie_id ? 'border border-red-600' : 'w-full'
+                                        }`}
+                                >
+                                <SelectValue placeholder='Seleccione una Superficie'>
+                                    {superficie.Superficie_id ? superficie.find(superficie => superficie.id === superficie.Superficie_id)?.Nombre : 'Seleccione una Superficie'}
+                                </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {superficie.map((superficie) => (
+                                        <SelectItem key={superficie.id} value={superficie.id}>
+                                        {superficie.Nombre}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.Superficie_id && (
+                                <span className="text-xs text-red-600 mt-1 ml-2">
+                                    {errors.Superficie_id}
                                 </span>
                             )}
                         </div>
@@ -550,25 +707,23 @@ export default function Page() {
                             </tr>
                         </thead>
                         <tbody>
+
                             {currentItems.map((cancha) => (
-                                <tr key={cancha.id} className={`border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                <tr key={cancha.id}>
                                     <td className="px-6 py-4 font-medium">{cancha.Nombre}</td>
-                                    <td className="px-6 py-4">{cancha.Superficie}</td>
+                                    <td className="px-6 py-4">{cancha.Superficie_id.Nombre}</td>
                                     <td className="px-6 py-4">{cancha.Tamanio}</td>
                                     <td className="px-6 py-4">{cancha.Precio_hora}</td>
                                     <td className="px-6 py-4">{cancha.Disciplina.Nombre}</td>
                                     <td className="px-6 py-4">
                                         {cancha.Imagen_cancha.length > 0 && (
-                                            cancha.Imagen_cancha.map((imagen, index) => (
-                                                <Image
-                                                    key={index}
-                                                    src={imagen.Url_img}
-                                                    alt={`Imagen de la Cancha ${index + 1}`}
-                                                    width={100}
-                                                    height={100}
-                                                    className="object-cover rounded-md m-1"
-                                                />
-                                            ))
+                                            <Image
+                                                src={cancha.Imagen_cancha[0].Url_img}
+                                                alt={`Imagen de la Cancha`}
+                                                width={100}
+                                                height={100}
+                                                className="object-cover rounded-md m-1"
+                                            />
                                         )}
                                     </td>
                                     <td className="px-6 py-4">

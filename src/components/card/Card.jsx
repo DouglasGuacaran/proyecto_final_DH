@@ -61,10 +61,10 @@ const Card = ({ dataCancha }) => {
 
   return (
     <div className={`w-full max-w-sm ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-black border-gray-200'} rounded-lg shadow flex flex-col justify-between`}>
-      
+
       <div className=' flex max-w-full items-center justify-end mt-5 mb-5 mr-10'>
       {user && ( // Mostrar el botón de Favorito solo si el usuario está logueado
-          <button 
+          <button
             className={`focus:outline-none ${isFavorite ? 'text-red-500' : 'text-gray-500'}`}
             onClick={handleFavoriteClick}
           >
@@ -72,7 +72,7 @@ const Card = ({ dataCancha }) => {
           </button>
         )}
       </div>
-      
+
       {Imagen_cancha.length > 1 ? (
         <Slider {...settings}>
           {Imagen_cancha.map((imagen, index) => (
@@ -81,9 +81,14 @@ const Card = ({ dataCancha }) => {
                 src={imagen.Url_img}
                 alt={`Imagen de la Cancha ${index + 1}`}
                 layout="fill"
+                sizes="(max-width: 768px) 100vw,
+                (max-width: 1200px) 50vw,
+                33vw"
+                // width={500}
+                // height={300}
                 objectFit="cover"
                 className="rounded-t-lg cursor-pointer"
-                onClick={() => window.open(imagen.Url_img, '_blank')}
+                // onClick={() => window.open(imagen.Url_img, '_blank')}
               />
             </div>
           ))}
@@ -94,9 +99,11 @@ const Card = ({ dataCancha }) => {
             src={Imagen_cancha[0]?.Url_img || '/default-image.jpg'}
             alt={`Imagen de la Cancha`}
             layout="fill"
+            // width={500}
+            // height={300}
             objectFit="cover"
             className="rounded-t-lg cursor-pointer"
-            onClick={() => window.open(Imagen_cancha[0]?.Url_img, '_blank')}
+            // onClick={() => window.open(Imagen_cancha[0]?.Url_img, '_blank')}
           />
         </div>
       )}
