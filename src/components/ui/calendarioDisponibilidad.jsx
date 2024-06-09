@@ -40,10 +40,6 @@ function CalendarioDisponibilidad({
     reservationsByDay
   );
 
-  console.log("emptyDays:", emptyDays);
-  console.log("partiallyFilledDays:", partiallyFilledDays);
-  console.log("fullyFilledDays:", fullyFilledDays);
-
   const modifiers = {
     booked: emptyDays,
     almostFull: partiallyFilledDays,
@@ -51,9 +47,9 @@ function CalendarioDisponibilidad({
   };
 
   const modifiersClassNames = {
-    booked: ' bg-green-300', // Cambia 'bg-red-500' a la clase que quieras para los días ocupados.
-    almostFull: 'bg-yellow-500', // Cambia 'bg-yellow-500' a la clase que quieras para los días casi llenos.
-    full: 'bg-red-500', // Cambia 'bg-green-500' a la clase que quieras para los días llenos.
+    booked: ' bg-green-300',
+    almostFull: 'bg-yellow-500',
+    full: 'bg-red-500',
   };
 
   return (

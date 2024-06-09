@@ -86,6 +86,10 @@ export default function Page() {
           Tamanio,
           Precio_hora,
           Disciplina_id,
+          Superficie_id (
+            Nombre
+          ),
+          Caracteristicas,
           Imagen_cancha (
             Url_img
           )
@@ -95,9 +99,15 @@ export default function Page() {
         .single();
 
       if (error) {
-        console.error('Error fetching cancha:', error);
+        console.error('Error fetching cancha:', error.message);
+      } else if (!data) {
+        console.error('No cancha found with id:', id);
       } else {
-        const dataCancha = { ...data, imagen: data.Imagen_cancha.Url_img };
+        const dataCancha = {
+          ...data,
+          imagen: data.Imagen_cancha.Url_img,
+          superficieNombre: data.Superficie_id.Nombre
+        };
 
         setCancha(dataCancha);
       }
@@ -146,10 +156,11 @@ export default function Page() {
   };
 
   const reservationsByDay = getReservationsByDay(reservas);
-  console.log("Reservations by day:", reservationsByDay);
+  // console.log("Reservations by day:", reservationsByDay);
 
 
-  const { Nombre, Precio_hora, Superficie, Tamanio, Caracteristicas, Imagen_cancha } = cancha;
+
+  const { Nombre, Precio_hora, Superficie, Tamanio, Caracteristicas, Imagen_cancha, superficieNombre} = cancha;
 
   const sliderSettings = {
     dots: true,
@@ -195,6 +206,28 @@ export default function Page() {
 
   const handleShareModalOpen = () => setIsShareModalOpen(true);
   const handleShareModalClose = () => setIsShareModalOpen(false);
+
+  function formatText(text) {
+    return text
+      .split(/(?=[A-Z])/) // Divide el texto en palabras por cada letra mayúscula
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Convierte la primera letra de cada palabra en mayúscula
+      .join(' '); // Une las palabras con espacios
+  }
+
+  function convertToArray(text) {
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      console.error('Error converting text to array:', error);
+      return null;
+    }
+  }
+  const [caracteristicasCancha, setCaracteristicasCancha] = useState(null);
+  useEffect(() => {
+    if (Caracteristicas) {
+      setCaracteristicasCancha(convertToArray(Caracteristicas));
+    }
+  }, [Caracteristicas]);
 
   return (
     <>
@@ -268,22 +301,22 @@ export default function Page() {
                 <th className="border px-4 py-2">Disponibilidad</th>
               </tr>
             </thead>
+
             <tbody>
-              {Caracteristicas && Object.keys(Caracteristicas)
-                .filter((key) => Caracteristicas[key] === 'True')
-                .map((key) => (
-                  <tr key={key}>
-                    <td className="border px-4 py-2">{key}</td>
-                    <td className="border px-4 py-2 text-center">
-                      <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
-                    </td>
-                  </tr>
-                ))}
+              {Array.isArray(caracteristicasCancha) && caracteristicasCancha.map((caracteristica) => (
+                <tr key={caracteristica}>
+                  <td className="border px-4 py-2">{formatText(caracteristica)}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
+                  </td>
+                </tr>
+              ))}
             </tbody>
+
           </table>
 
           <ul className={`mb-6 font-normal ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-            <li>{Superficie}, {Tamanio}</li>
+            <li>{superficieNombre}, {Tamanio}</li>
             <li className='font-semibold text-lg mt-3'>$ {Precio_hora}</li>
           </ul>
 
