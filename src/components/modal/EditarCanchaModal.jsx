@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import Swal from 'sweetalert2';
 
 const supabase = createClient();
 
@@ -74,7 +75,7 @@ const EditarCanchaModal = ({ isOpen, onClose, canchaId, onEdit, theme }) => {
         }
     };
 
-    const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
@@ -114,6 +115,15 @@ const EditarCanchaModal = ({ isOpen, onClose, canchaId, onEdit, theme }) => {
             );
 
             if (errorInsertImagenes) throw errorInsertImagenes;
+
+            // Mostrar SweetAlert de éxito
+            Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "Tu trabajo ha sido guardado",
+                showConfirmButton: false,
+                timer: 1500
+            });
 
             onEdit();
             onClose();
