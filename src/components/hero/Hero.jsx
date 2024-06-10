@@ -4,7 +4,7 @@ import Search from '../search/Search';
 import { useTheme } from '@/context/ThemeContext';
 import Image from 'next/image';
 
-export default function Hero({ onSearch }) {
+export default function Hero({ onSearch, clearSearchResults }) {
   const { theme } = useTheme();
 
   return (
@@ -25,7 +25,7 @@ export default function Hero({ onSearch }) {
           />
         </div>
       </div>
-      <Search onSearch={onSearch} />
+      <Search onSearch={onSearch} clearSearchResults={clearSearchResults} />
     </section>
   );
 }

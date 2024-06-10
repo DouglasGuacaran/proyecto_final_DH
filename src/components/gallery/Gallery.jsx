@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../card/Card';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -8,17 +8,24 @@ const Gallery = ({ searchResults }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 10;
 
+  useEffect(() => {
+    setCurrentPage(1); // Reset to the first page whenever searchResults change
+  }, [searchResults]);
+
+  // Ensure searchResults is always an array
+  const safeSearchResults = Array.isArray(searchResults) ? searchResults : [];
+
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentData = searchResults.slice(indexOfFirstCard, indexOfLastCard);
+  const currentData = safeSearchResults.slice(indexOfFirstCard, indexOfLastCard);
 
-  const totalPages = Math.ceil(searchResults.length / cardsPerPage);
+  const totalPages = Math.ceil(safeSearchResults.length / cardsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <section className={`flex flex-col my-10 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
-      {searchResults.length > 0 ? (
+      {safeSearchResults.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mx-auto px-10">
             {currentData.map((item) => (
