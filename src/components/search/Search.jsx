@@ -17,7 +17,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger } from "@/components/ui/popover";
-import { isBefore } from 'date-fns';
+import { isBefore } from 'date-fns'; 
 
 const supabase = createClient();
 
@@ -76,10 +76,9 @@ export default function Search({ onSearch }) {
           Imagen_cancha(*)
         )
       `)
-      .eq('Cancha.Disciplina.Nombre', selectedCategory)
-      .eq('Fecha', date)
-      .gte('HorarioInicio', startTime)
-      .lte('HorarioFin', endTime);
+      .eq('Cancha_id.Nombre', selectedCategory)
+      .gte('Fecha_hora_inicio', startTime)
+      .lte('Fecha_hora_fin', endTime);
 
     if (error) {
       console.error(error);
