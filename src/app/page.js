@@ -7,31 +7,21 @@ import Footer from "@/components/footer/Footer";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState([]);
-  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearchResults = (results) => {
-    setSearchResults(results);
-    setHasSearched(true);
+    setSearchResults(Array.isArray(results) ? results : []);
+  };
+
+  const clearSearchResults = () => {
+    setSearchResults([]);
   };
 
   return (
     <>
       <main>
         <Navbar />
-        <Hero onSearch={handleSearchResults} />
-        {hasSearched ? (
-          searchResults.length > 0 ? (
-            <Gallery data={searchResults} />
-          ) : (
-            <div className="text-center mt-10">
-              <h2 className="text-2xl">No hay disponibilidad de canchas</h2>
-            </div>
-          )
-        ) : (
-          <div className="text-center mt-10">
-            <h2 className="text-2xl">Por favor, realiza una búsqueda</h2>
-          </div>
-        )}
+        <Hero onSearch={handleSearchResults} clearSearchResults={clearSearchResults} />
+        <Gallery searchResults={searchResults}/>
       </main>
       <Footer />
     </>

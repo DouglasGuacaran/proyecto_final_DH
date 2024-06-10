@@ -16,12 +16,13 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger } from "@/components/ui/popover";
-import { isBefore } from 'date-fns'; 
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { isBefore, startOfDay, endOfDay } from 'date-fns';
 
 const supabase = createClient();
 
-export default function Search({ onSearch }) {
+export default function Search({ onSearch, clearSearchResults }) {
   const [date, setDate] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -65,7 +66,27 @@ export default function Search({ onSearch }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const { data, error } = await supabase
+    clearSearchResults(); // Clear previous search results
+
+    if (!date) {
+      alert("Por favor, selecciona una fecha.");
+      return;
+    }
+
+    const startDateTime = startOfDay(date).toISOString().split('T')[0] + 'T' + startTime + ':00';
+    const endDateTime = endOfDay(date).toISOString().split('T')[0] + 'T' + endTime + ':00';
+    console.log(selectedCategory, startDateTime, endDateTime);
+
+    // Get the ID of the selected category
+    const selectedCategoryObj = categories.find(category => category.Nombre === selectedCategory);
+    if (!selectedCategoryObj) {
+      alert("Por favor, selecciona una categoría válida.");
+      return;
+    }
+
+    const { id: selectedCategoryId } = selectedCategoryObj;
+
+    const { data: reservas, error: errorReservas } = await supabase
       .from('Reserva')
       .select(`
         *,
@@ -80,24 +101,34 @@ export default function Search({ onSearch }) {
       .gte('Fecha_hora_inicio', startTime)
       .lte('Fecha_hora_fin', endTime);
 
-    if (error) {
-      console.error(error);
-    } else {
-      const availableCanchas = await supabase
-        .from('Cancha')
-        .select(`*,
-          Disciplina(*),
-          Superficie(*),
-          Imagen_cancha(*)
-        `)
-        .eq('Disciplina.Nombre', selectedCategory);
 
-      // Filter out the canchas that are reserved
-      const reservedCanchasIds = data.map(reserva => reserva.Cancha.id);
-      const filteredCanchas = availableCanchas.data.filter(cancha => !reservedCanchasIds.includes(cancha.id));
-
-      onSearch(filteredCanchas || []);
+    if (errorReservas) {
+      console.error(errorReservas);
+      onSearch([]);
+      return;
     }
+
+    const { data: canchas, error: errorCanchas } = await supabase
+      .from('Cancha')
+      .select(`
+        *,
+        Disciplina(*),
+        Superficie(*),
+        Imagen_cancha(*)
+      `)
+      .eq('Disciplina_id', selectedCategoryId);
+
+    if (errorCanchas) {
+      console.error(errorCanchas);
+      onSearch([]);
+      return;
+    }
+
+    // Filter out the canchas that are reserved
+    const reservedCanchasIds = reservas.map(reserva => reserva.Cancha_id);
+    const filteredCanchas = canchas.filter(cancha => !reservedCanchasIds.includes(cancha.id));
+
+    onSearch(filteredCanchas);
   };
 
   return (
@@ -113,7 +144,7 @@ export default function Search({ onSearch }) {
             htmlFor="sport">
             Deporte o actividad
           </label>
-          <Select id="sport" onValueChange={(value) => setSelectedCategory(value)}>
+          <Select id="sport" onValueChange={(value) => setSelectedCategory(value)} required>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecciona un deporte" />
             </SelectTrigger>
@@ -130,7 +161,7 @@ export default function Search({ onSearch }) {
           <label
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             htmlFor="date">
-            Fecha
+            Escoge una Fecha
           </label>
           <Popover>
             <PopoverTrigger asChild>
@@ -162,7 +193,7 @@ export default function Search({ onSearch }) {
             htmlFor="start-time">
             Hora de inicio
           </label>
-          <Select id="start-time" onValueChange={(value) => setStartTime(value)}>
+          <Select required id="start-time" onValueChange={(value) => setStartTime(value)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Hora de inicio" />
             </SelectTrigger>
@@ -181,7 +212,7 @@ export default function Search({ onSearch }) {
             htmlFor="end-time">
             Hora final
           </label>
-          <Select id="end-time" onValueChange={(value) => setEndTime(value)}>
+          <Select id="end-time" required onValueChange={(value) => setEndTime(value)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Hora final" />
             </SelectTrigger>
