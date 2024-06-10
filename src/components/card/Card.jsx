@@ -78,6 +78,9 @@ const Card = ({ dataCancha }) => {
                 layout="fill"
                 objectFit="cover"
                 className="rounded-t-lg cursor-pointer"
+                sizes="(max-width: 768px) 100vw, 
+                (max-width: 1200px) 50vw, 
+                33vw"
                 onClick={() => window.open(imagen.Url_img, '_blank')}
               />
             </div>
