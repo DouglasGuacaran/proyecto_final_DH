@@ -22,7 +22,8 @@ export default function Cancha() {
                     .select(`
                         *,
                         Disciplina:Disciplina_id (Nombre),
-                        Superficie:Superficie_id (Nombre)
+                        Superficie:Superficie_id (Nombre),
+                        Imagen_cancha (Url_img)
                     `);
 
                 if (error) throw error;
@@ -41,11 +42,11 @@ export default function Cancha() {
     const handleAddCancha = () => {
         setLoading(true);
         setIsModalOpen(false);
-        // Fetch updated canchas list
-        // This is a placeholder, replace with actual fetch call
         setCanchas([...canchas]);
         setLoading(false);
     };
+
+    if (loading) return <p>Cargando...</p>;
 
     if (loading) return <p>Cargando...</p>;
 
