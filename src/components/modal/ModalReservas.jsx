@@ -103,7 +103,9 @@ const ModalReservas = ({ isOpen, onClose, onReserve, canchaName, existingReserva
             X
           </button>
         </div>
-        <h2 className="text-2xl font-bold mb-4 text-center">Reserva en {canchaName}</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Reserva en {canchaName}
+        </h2>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -135,13 +137,20 @@ const ModalReservas = ({ isOpen, onClose, onReserve, canchaName, existingReserva
           <SelectContent>
             {availableTimeSlots.map(({ slot, reserved }) => (
               <SelectItem key={slot} value={slot} disabled={reserved}>
-                {slot} {reserved ? '(Reservado)' : ''}
+                {slot} {reserved ? "(Reservado)" : ""}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Button className="w-full" onClick={handleReserve}>Reservar</Button>
+        <div>
+          <Button className="w-full" onClick={handleReserve}>
+            Reservar
+          </Button>
+          <span className="block text-sm text-gray-500 sm:text-center mt-8">
+            <a href="/policies">Ver Políticas</a>
+          </span>
+        </div>
       </div>
     </div>
   );

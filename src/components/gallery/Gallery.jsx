@@ -17,6 +17,7 @@ const Gallery = () => {
     futbol: "Fútbol",
     tenis: "Tenis",
     paddel: "Paddel",
+    baloncesto: "Baloncesto"
   };
 
   useEffect(() => {
@@ -54,9 +55,7 @@ const Gallery = () => {
 
   return (
     <section
-      className={`flex flex-col my-10 ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
-      }`}
+      className={`flex flex-col my-10 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
     >
       <div className="flex flex-col gap-3 justify-center items-center mb-10">
         <h2 className="font-medium text-lg">Categoría</h2>
@@ -67,9 +66,7 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-ball-football w-7 h-7 ${
-                theme === "dark" ? "stroke-white" : "stroke-black"
-              }`}
+              className={`icon icon-tabler icon-tabler-ball-football w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
@@ -88,9 +85,7 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-ball-tennis w-7 h-7 ${
-                theme === "dark" ? "stroke-white" : "stroke-black"
-              }`}
+              className={`icon icon-tabler icon-tabler-ball-tennis w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
@@ -109,9 +104,7 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-paddle w-7 h-7 ${
-                theme === "dark" ? "stroke-white" : "stroke-black"
-              }`}
+              className={`icon icon-tabler icon-tabler-paddle w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
@@ -125,14 +118,12 @@ const Gallery = () => {
             </svg>
           </Toggle>
           <Toggle
-            pressed={selectedSports.includes(sports.baloncesto)} // Cambia "paddel" a "baloncesto"
-            onPressedChange={() => handleToggle(sports.baloncesto)} // Cambia "paddel" a "baloncesto"
+            pressed={selectedSports.includes(sports.baloncesto)}
+            onPressedChange={() => handleToggle(sports.baloncesto)}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-ball-basketball w-7 h-7 ${
-                theme === "dark" ? "stroke-white" : "stroke-black"
-              }`}
+              className={`icon icon-tabler icon-tabler-ball-basketball w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
