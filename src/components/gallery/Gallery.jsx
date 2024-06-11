@@ -111,6 +111,28 @@ const Gallery = () => {
               <path d="M9.3 5.3l9.4 9.4" />
             </svg>
           </Toggle>
+          <Toggle
+  pressed={selectedSports.includes(sports.baloncesto)} // Cambia "paddel" a "baloncesto"
+  onPressedChange={() => handleToggle(sports.baloncesto)} // Cambia "paddel" a "baloncesto"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={`icon icon-tabler icon-tabler-ball-basketball w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
+    viewBox="0 0 24 24"
+    strokeWidth="1.5"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+    <path d="M5.65 5.65l12.7 12.7" />
+    <path d="M5.65 18.35l12.7 -12.7" />
+    <path d="M12 3a9 9 0 0 0 9 9" />
+    <path d="M3 12a9 9 0 0 1 9 9" />
+  </svg>
+</Toggle>
+
         </div>
       </div>
       <div className="grid grid-cols-2 gap-10 mx-auto px-10">

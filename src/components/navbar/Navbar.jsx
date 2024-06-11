@@ -29,11 +29,7 @@ export default function Navbar() {
           console.error('Error fetching user data:', error);
         } else {
           setRol(data.Rol);
-<<<<<<< HEAD
         }
-=======
-          }
->>>>>>> c2c0beca7679217d20f72cedf9ef38b9a940b807
       }
     };
 
