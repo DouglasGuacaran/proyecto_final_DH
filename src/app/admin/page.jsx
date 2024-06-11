@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import EditarCanchas from '@/components/admin/EditarCanchas';
+import Canchas from '@/components/admin/Canchas';
 import EditarUsuarios from '@/components/admin/EditarUsuarios';
 import EditarCategoriaDeportiva from '@/components/admin/EditarCategoriaDeportiva';
 import EditarReservas from '@/components/admin/EditarReservas';
@@ -15,7 +15,7 @@ const tabs = [
     {
         id: 'canchas',
         label: 'Canchas',
-        content: <EditarCanchas />,
+        content: <Canchas />,
     },
     {
         id: 'usuarios',
@@ -44,5 +44,5 @@ const tabs = [
         </>
         );
     }
-    
+
     export default withAuth(AdminPage);

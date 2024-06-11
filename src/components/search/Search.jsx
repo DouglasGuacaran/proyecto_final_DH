@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/select';
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
- 
+import { createClient } from '../../utils/supabase/client';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -17,10 +17,50 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { isBefore } from 'date-fns';
+
+const supabase = createClient();
 
 export default function Search() {
     const [date, setDate] = useState(null)
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+      const fetchCategories = async () => {
+        const { data, error } = await supabase
+          .from('Disciplina')
+          .select('*');
+        if (error) {
+          console.error(error);
+        } else {
+          setCategories(data);
+        }
+      };
+
+      fetchCategories();
+    }, []);
+
+    const generateTimeSlots = (start, end) => {
+      const times = [];
+      const startHour = parseInt(start.split(':')[0], 10);
+      const endHour = parseInt(end.split(':')[0], 10);
+
+      for (let hour = startHour; hour <= endHour; hour++) {
+        const formattedHour = hour.toString().padStart(2, '0');
+        times.push(`${formattedHour}:00`);
+      }
+
+      return times
+    };
+    const timeSlots = generateTimeSlots('08:00', '23:00');
+
+    const isPastDate = (date) => {
+      const today = new Date();
+      return isBefore(date, today.setHours(0, 0, 0, 0)); // Compara solo las fechas, sin horas
+    };
+
+
   return (
     <div className='flex gap-10 mt-20 flex-col md:flex-row'>
       <Select>
@@ -28,9 +68,11 @@ export default function Search() {
           <SelectValue placeholder="Deporte" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="Fútbol">Fútbol</SelectItem>
-          <SelectItem value="Tennis">Tennis</SelectItem>
-          <SelectItem value="Paddle">Paddle</SelectItem>
+            {categories.map(category => (
+            <SelectItem key={category.id} value={category.Nombre}>
+              {category.Nombre}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 
@@ -53,6 +95,7 @@ export default function Search() {
           selected={date}
           onSelect={setDate}
           initialFocus
+          disabled={(date) => isPastDate(date)}
         />
       </PopoverContent>
     </Popover>
@@ -62,9 +105,13 @@ export default function Search() {
           <SelectValue placeholder="Horario" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="9:00">9:00</SelectItem>
-          <SelectItem value="10:00">10:00</SelectItem>
-          <SelectItem value="11:00">11:00</SelectItem>
+          {timeSlots.map(time => (
+            <SelectItem key={time} value={time}>
+              {time}
+            </SelectItem>
+          ))}
+
+
         </SelectContent>
       </Select>
 

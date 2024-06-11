@@ -1,9 +1,9 @@
-'use client';
-import { useState, useEffect } from 'react';
-import Card from '../card/Card';
-import { Toggle } from '../ui/toggle';
-import { useCanchas } from '@/context/CanchasProvider';
-import { useTheme } from '@/context/ThemeContext';
+"use client";
+import { useState, useEffect } from "react";
+import Card from "../card/Card";
+import { Toggle } from "../ui/toggle";
+import { useCanchas } from "@/context/CanchasProvider";
+import { useTheme } from "@/context/ThemeContext";
 
 const Gallery = () => {
   const { theme } = useTheme();
@@ -14,9 +14,10 @@ const Gallery = () => {
   const cardsPerPage = 10;
 
   const sports = {
-    futbol: 'Fútbol',
-    tenis: 'Tenis',
-    paddel: 'Paddel',
+    futbol: "Fútbol",
+    tenis: "Tenis",
+    paddel: "Paddel",
+    baloncesto: "Baloncesto"
   };
 
   useEffect(() => {
@@ -43,14 +44,19 @@ const Gallery = () => {
 
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCanchas = filteredCanchas.slice(indexOfFirstCard, indexOfLastCard);
+  const currentCanchas = filteredCanchas.slice(
+    indexOfFirstCard,
+    indexOfLastCard
+  );
 
   const totalPages = Math.ceil(filteredCanchas.length / cardsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <section className={`flex flex-col my-10 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+    <section
+      className={`flex flex-col my-10 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
+    >
       <div className="flex flex-col gap-3 justify-center items-center mb-10">
         <h2 className="font-medium text-lg">Categoría</h2>
         <div className="flex gap-3">
@@ -60,7 +66,7 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-ball-football w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
+              className={`icon icon-tabler icon-tabler-ball-football w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
@@ -79,7 +85,7 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-ball-tennis w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
+              className={`icon icon-tabler icon-tabler-ball-tennis w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
@@ -98,7 +104,7 @@ const Gallery = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`icon icon-tabler icon-tabler-paddle w-7 h-7 ${theme === 'dark' ? 'stroke-white' : 'stroke-black'}`}
+              className={`icon icon-tabler icon-tabler-paddle w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               fill="none"
@@ -111,6 +117,27 @@ const Gallery = () => {
               <path d="M9.3 5.3l9.4 9.4" />
             </svg>
           </Toggle>
+          <Toggle
+            pressed={selectedSports.includes(sports.baloncesto)}
+            onPressedChange={() => handleToggle(sports.baloncesto)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`icon icon-tabler icon-tabler-ball-basketball w-7 h-7 ${theme === "dark" ? "stroke-white" : "stroke-black"}`}
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+              <path d="M5.65 5.65l12.7 12.7" />
+              <path d="M5.65 18.35l12.7 -12.7" />
+              <path d="M12 3a9 9 0 0 0 9 9" />
+              <path d="M3 12a9 9 0 0 1 9 9" />
+            </svg>
+          </Toggle>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-10 mx-auto px-10">
@@ -119,25 +146,25 @@ const Gallery = () => {
         ))}
       </div>
       <div className="flex justify-center mt-10">
-      <nav>
-        <ul className="flex pl-0 list-none rounded my-2 space-x-1">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <li key={index + 1}>
-              <button
-                onClick={() => paginate(index + 1)}
-                className={`px-3 py-2 ml-0 leading-tight ${
-                  theme === 'dark' ? 
-                  'bg-gray-800 text-white border-gray-700 hover:bg-gray-600' : 
-                  'bg-white text-black border-gray-300 hover:bg-gray-200 hover:text-gray-700'
-                } rounded-lg`}
-              >
-                {index + 1}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+        <nav>
+          <ul className="flex pl-0 list-none rounded my-2 space-x-1">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <li key={index + 1}>
+                <button
+                  onClick={() => paginate(index + 1)}
+                  className={`px-3 py-2 ml-0 leading-tight ${
+                    theme === "dark"
+                      ? "bg-gray-800 text-white border-gray-700 hover:bg-gray-600"
+                      : "bg-white text-black border-gray-300 hover:bg-gray-200 hover:text-gray-700"
+                  } rounded-lg`}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </section>
   );
 };
