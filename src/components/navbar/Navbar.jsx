@@ -1,32 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/context/AuthContext';
-import { Button } from '../ui/button';
-import { useTheme } from '@/context/ThemeContext';
-import { BellIcon, CircleUserIcon, EllipsisVerticalIcon } from 'lucide-react';
-import { Menu } from '@headlessui/react';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "../ui/button";
+import { useTheme } from "@/context/ThemeContext";
+import { BellIcon, CircleUserIcon, EllipsisVerticalIcon } from "lucide-react";
+import { Menu } from "@headlessui/react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, supabase } = useAuth();
-  const [userName, setUserName] = useState('');
-  const [rol, setRol] = useState('');
+  const [userName, setUserName] = useState("");
+  const [rol, setRol] = useState("");
 
   useEffect(() => {
     const fetchUserName = async () => {
       if (user) {
         const { data, error } = await supabase
-          .from('Usuario') // Ajusta el nombre de la tabla según tu esquema de base de datos
-          .select('Username, Rol') // O 'name' dependiendo del campo que quieras mostrar
-          .eq('uid', user.id)
+          .from("Usuario") // Ajusta el nombre de la tabla según tu esquema de base de datos
+          .select("Username, Rol") // O 'name' dependiendo del campo que quieras mostrar
+          .eq("uid", user.id)
           .single();
 
         if (error) {
-          console.error('Error fetching user data:', error);
+          console.error("Error fetching user data:", error);
         } else {
           setRol(data.Rol);
         }
@@ -40,7 +40,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   function MoonIcon(props) {
@@ -90,18 +90,23 @@ export default function Navbar() {
   }
 
   return (
-    <nav className={`fixed top-0 w-full border-gray-200 z-10 bg-background text-foreground`}>
+    <nav
+      className={`fixed top-0 w-full border-gray-200 z-10 bg-background text-foreground`}
+    >
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <Link href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+        <Link
+          href="/"
+          className="flex items-center space-x-3 rtl:space-x-reverse"
+        >
           <Image
-            src={'/logo-sinfondo.png'}
+            src={"/logo-sinfondo.png"}
             width={50}
             height={50}
             priority
             alt="Logo de entretiempo"
           />
           <span className="self-center text-2xl font-semibold whitespace-nowrap">
-            EntreTiempo
+            entretiempo
           </span>
         </Link>
         <Button
@@ -130,33 +135,39 @@ export default function Navbar() {
           </svg>
         </Button>
         <div
-          className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
+          className={`${isOpen ? "block" : "hidden"} w-full md:block md:w-auto`}
           id="navbar-default"
         >
-          <ul className={`font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-background`}>
+          <ul
+            className={`font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-background`}
+          >
             {user ? (
-              <div className='p-2'>
-                <a className='text-base'>Bienvenido {userName}</a>
+              <div className="p-2">
+                <a className="text-base">Bienvenido {userName}</a>
               </div>
             ) : (
               <li>
                 <Link href="/register">
-                  <Button variant="link" className='text-base'>Crear Cuenta</Button>
+                  <Button variant="link" className="text-base">
+                    Crear Cuenta
+                  </Button>
                 </Link>
               </li>
             )}
             {user ? (
               <>
-                {rol === 'Admin' && (
+                {rol === "Admin" && (
                   <>
-                  <li>
-                    <Link href="/admin">
-                      <Button variant="link" className='text-base'>Administración del Sitio</Button>
-                    </Link>
-                  </li>
-                  <li>
-                    <BellIcon className="text-gray-500 h-6 w-6 mt-2" />
-                  </li>
+                    <li>
+                      <Link href="/admin">
+                        <Button variant="link" className="text-base">
+                          Administración del Sitio
+                        </Button>
+                      </Link>
+                    </li>
+                    <li>
+                      <BellIcon className="text-gray-500 h-6 w-6 mt-2" />
+                    </li>
                   </>
                 )}
                 <Menu as="div" className="relative">
@@ -169,9 +180,9 @@ export default function Navbar() {
                         <Link
                           href="/account"
                           className={`${
-                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                            active ? "bg-gray-100 dark:bg-gray-700" : ""
                           } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                          >
+                        >
                           Mi Cuenta
                         </Link>
                       )}
@@ -180,7 +191,7 @@ export default function Navbar() {
                       {({ active }) => (
                         <button
                           className={`${
-                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                            active ? "bg-gray-100 dark:bg-gray-700" : ""
                           } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
                           onClick={handleLogout}
                         >
@@ -194,7 +205,9 @@ export default function Navbar() {
             ) : (
               <li>
                 <Link href="/login">
-                  <Button variant="link" className='text-base'>Iniciar Sesión</Button>
+                  <Button variant="link" className="text-base">
+                    Iniciar Sesión
+                  </Button>
                 </Link>
               </li>
             )}
@@ -204,7 +217,11 @@ export default function Navbar() {
                 className="rounded-full p-2 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                 onClick={toggleTheme}
               >
-                {theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
+                {theme === "light" ? (
+                  <MoonIcon className="h-5 w-5" />
+                ) : (
+                  <SunIcon className="h-5 w-5" />
+                )}
               </Button>
             </li>
           </ul>
