@@ -5,9 +5,12 @@ import { Toggle } from "../ui/toggle";
 import { useCanchas } from "@/context/CanchasProvider";
 import { useTheme } from "@/context/ThemeContext";
 
-const Gallery = ({ searchResults }) => {
+const Gallery = () => {
   const { theme } = useTheme();
+  const { canchas } = useCanchas();
+  const [selectedSports, setSelectedSports] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [shuffledCanchas, setShuffledCanchas] = useState([]);
   const cardsPerPage = 10;
 
   const sports = {
@@ -18,11 +21,26 @@ const Gallery = ({ searchResults }) => {
   };
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to the first page whenever searchResults change
-  }, [searchResults]);
+    const shuffled = [...canchas].sort(() => 0.5 - Math.random());
+    setShuffledCanchas(shuffled);
+  }, [canchas]);
 
-  // Ensure searchResults is always an array
-  const safeSearchResults = Array.isArray(searchResults) ? searchResults : [];
+  const handleToggle = (sport) => {
+    setSelectedSports((prevSelected) => {
+      if (prevSelected.includes(sport)) {
+        return prevSelected.filter((s) => s !== sport);
+      } else {
+        return [...prevSelected, sport];
+      }
+    });
+  };
+
+  const filteredCanchas =
+    selectedSports.length === 0
+      ? shuffledCanchas
+      : shuffledCanchas.filter((cancha) =>
+          selectedSports.includes(cancha.Disciplina?.Nombre)
+        );
 
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
@@ -31,7 +49,7 @@ const Gallery = ({ searchResults }) => {
     indexOfLastCard
   );
 
-  const totalPages = Math.ceil(safeSearchResults.length / cardsPerPage);
+  const totalPages = Math.ceil(filteredCanchas.length / cardsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
