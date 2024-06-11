@@ -47,6 +47,7 @@ export default function Footer() {
         <span className={`block text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} sm:text-center`}>
           © 2024 Equipo 5. Todos los derechos reservados.
         </span>
+
       </div>
     </footer>
   );
