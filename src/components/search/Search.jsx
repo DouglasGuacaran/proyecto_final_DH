@@ -97,9 +97,10 @@ export default function Search({ onSearch, clearSearchResults }) {
           Imagen_cancha(*)
         )
       `)
-      .eq('Cancha.Disciplina_id', selectedCategoryId)
-      .gte('Fecha_hora_inicio', startDateTime)
-      .lte('Fecha_hora_fin', endDateTime);
+      .eq('Cancha_id.Nombre', selectedCategory)
+      .gte('Fecha_hora_inicio', startTime)
+      .lte('Fecha_hora_fin', endTime);
+
 
     if (errorReservas) {
       console.error(errorReservas);
