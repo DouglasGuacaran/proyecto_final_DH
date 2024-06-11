@@ -207,13 +207,6 @@ export default function Page() {
   const handleShareModalOpen = () => setIsShareModalOpen(true);
   const handleShareModalClose = () => setIsShareModalOpen(false);
 
-  function formatText(text) {
-    return text
-      .split(/(?=[A-Z])/) // Divide el texto en palabras por cada letra mayúscula
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Convierte la primera letra de cada palabra en mayúscula
-      .join(' '); // Une las palabras con espacios
-  }
-
   function convertToArray(text) {
     try {
       return JSON.parse(text);
@@ -228,6 +221,8 @@ export default function Page() {
       setCaracteristicasCancha(convertToArray(Caracteristicas));
     }
   }, [Caracteristicas]);
+
+  console.log(Caracteristicas);
 
   return (
     <>
@@ -305,7 +300,7 @@ export default function Page() {
             <tbody>
               {Array.isArray(caracteristicasCancha) && caracteristicasCancha.map((caracteristica) => (
                 <tr key={caracteristica}>
-                  <td className="border px-4 py-2">{formatText(caracteristica)}</td>
+                  <td className="border px-4 py-2">{caracteristica}</td>
                   <td className="border px-4 py-2 text-center">
                     <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
                   </td>
