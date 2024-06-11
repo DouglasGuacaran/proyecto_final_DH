@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -17,11 +17,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-const ModalReservas = ({ isOpen, onClose, onReserve, canchaName }) => {
+const ModalReservas = ({ isOpen, onClose, onReserve, canchaName, existingReservations, closeModal }) => {
   const [date, setDate] = useState(null);
   const [timeSlot, setTimeSlot] = useState('');
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
 
-  if (!isOpen) return null;
+
 
   const isPastDate = (date) => {
     const today = new Date();
@@ -44,6 +45,8 @@ const ModalReservas = ({ isOpen, onClose, onReserve, canchaName }) => {
       const formattedEndDateTime = format(endDateTime, 'yyyy-MM-dd HH:mm:ss');
 
       onReserve({ startDateTime: formattedStartDateTime, endDateTime: formattedEndDateTime });
+
+      closeModal();
     } else {
       alert('Por favor, selecciona una fecha y un horario.');
     }
@@ -63,7 +66,31 @@ const ModalReservas = ({ isOpen, onClose, onReserve, canchaName }) => {
     return times;
   };
 
-  const timeSlots = generateTimeSlots('08:00', '23:00');
+  useEffect(() => {
+    if (date) {
+      const timeSlots = generateTimeSlots('08:00', '23:00');
+      const filteredSlots = timeSlots.map((slot) => {
+        const isReserved = existingReservations.some((reservation) => {
+          const reservationDate = new Date(reservation.Fecha_hora_inicio).toLocaleDateString();
+          const reservationStartTime = new Date(reservation.Fecha_hora_inicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          return (
+            reservationDate === new Date(date).toLocaleDateString() &&
+            reservationStartTime === slot.split(' - ')[0]
+          );
+        });
+
+        return {
+          slot,
+          reserved: isReserved,
+        };
+      });
+
+      setAvailableTimeSlots(filteredSlots);
+    }
+  }, [date, existingReservations]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -106,9 +133,9 @@ const ModalReservas = ({ isOpen, onClose, onReserve, canchaName }) => {
             <SelectValue placeholder="Horario" />
           </SelectTrigger>
           <SelectContent>
-            {timeSlots.map(time => (
-              <SelectItem key={time} value={time}>
-                {time}
+            {availableTimeSlots.map(({ slot, reserved }) => (
+              <SelectItem key={slot} value={slot} disabled={reserved}>
+                {slot} {reserved ? '(Reservado)' : ''}
               </SelectItem>
             ))}
           </SelectContent>
