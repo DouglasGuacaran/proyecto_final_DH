@@ -1,5 +1,6 @@
 'use client';
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { createClient } from '../../utils/supabase/client';
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ import Autosuggest from 'react-autosuggest';
 import Select from 'react-select';
 import { useRouter } from 'next/navigation';
 import { isBefore } from 'date-fns';
+import { useTheme } from '@/context/ThemeContext';
 
 const supabase = createClient();
 
@@ -22,8 +24,11 @@ export default function Search({ onSearch }) {
   const [date, setDate] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [canchaName, setCanchaName] = useState('');
+  const [selectedCanchaId, setSelectedCanchaId] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
-  const router = useRouter();
+  const [errors, setErrors] = useState({});
+  const { push } = useRouter();
+  const { theme } = useTheme();
 
   const fetchCanchas = async (inputValue) => {
     const { data, error } = await supabase
@@ -54,15 +59,31 @@ export default function Search({ onSearch }) {
     </div>
   );
 
+  const onSuggestionSelected = (event, { suggestion }) => {
+    setCanchaName(suggestion.Nombre);
+    setSelectedCanchaId(suggestion.id);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (canchaName && date && selectedTime) {
-      const selectedCancha = suggestions.find(s => s.Nombre === canchaName);
-      if (selectedCancha) {
-        router.push(`/detail/${selectedCancha.id}`);
-      } else {
-        console.error('Cancha no encontrada');
-      }
+
+    // Validación de los campos
+    const validationErrors = {};
+    if (!canchaName) validationErrors.canchaName = 'El nombre de la cancha es requerido';
+    if (!date) validationErrors.date = 'La fecha es requerida';
+    if (!selectedTime) validationErrors.selectedTime = 'El horario es requerido';
+
+    if (Object.keys(validationErrors).length > 0) {
+      alert(Object.values(validationErrors).join('\n'));
+      return;
+    }
+
+    setErrors({});
+    
+    if (selectedCanchaId) {
+      push(`/${selectedCanchaId}`);
+    } else {
+      console.error('Cancha no encontrada');
     }
   };
 
@@ -90,12 +111,12 @@ export default function Search({ onSearch }) {
     placeholder: 'Buscar cancha',
     value: canchaName,
     onChange: (event, { newValue }) => setCanchaName(newValue),
-    className: 'w-[280px] md:w-[200px] lg:w-[280px] p-2 border border-gray-300 rounded-md focus:outline-none bg-white dark:bg-gray-800'
+    className: `w-[280px] md:w-[200px] lg:w-[280px] p-2 border ${errors.canchaName ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`
   };
 
-  const theme = {
+  const themeStyles = {
     container: 'relative',
-    suggestionsContainer: 'absolute z-10 bg-white border-white-50 dark:bg-gray-800 border rounded-md mt-1 w-[280px] md:w-[200px] lg:w-[280px]',
+    suggestionsContainer: `absolute z-10 ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} rounded-md mt-1 w-[280px] md:w-[200px] lg:w-[280px]`,
     suggestionsList: 'list-none p-0 m-0',
     suggestion: 'p-2',
     suggestionHighlighted: 'bg-gray-200'
@@ -111,7 +132,8 @@ export default function Search({ onSearch }) {
           getSuggestionValue={getSuggestionValue}
           renderSuggestion={renderSuggestion}
           inputProps={inputProps}
-          theme={theme}
+          theme={themeStyles}
+          onSuggestionSelected={onSuggestionSelected}
         />
       </div>
 
@@ -120,12 +142,14 @@ export default function Search({ onSearch }) {
           <Button
             variant={"outline"}
             className={cn(
-              "w-[280px]  md:w-[200px] lg:w-[280px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              "w-[280px] md:w-[200px] lg:w-[280px] justify-start text-left font-normal",
+              !date && "text-muted-foreground",
+              errors.date && "border-red-500",
+              theme === 'dark' ? 'bg-gray-600 text-white' : 'bg-white text-black'
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "PPP") : <span>Fecha</span>}
+            {date ? format(date, "PPP", { locale: es }) : <span>Fecha</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
@@ -141,10 +165,32 @@ export default function Search({ onSearch }) {
 
       <Select
         options={timeSlots.map(time => ({ value: time, label: time }))}
-        className="w-[280px] md:w-[200px] lg:w-[280px]"
-        placeholder="Horario"
+        className={`w-[280px] md:w-[200px] lg:w-[280px] ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}
+        placeholder="Hora"
         isClearable
         onChange={setSelectedTime}
+        styles={{
+          control: (baseStyles, state) => ({
+            ...baseStyles,
+            backgroundColor: theme === 'dark' ? 'gray' : 'white',
+            color: theme === 'dark' ? 'white' : 'black',
+            borderColor: state.isFocused ? (theme === 'dark' ? 'white' : 'black') : 'gray'
+          }),
+          singleValue: (baseStyles) => ({
+            ...baseStyles,
+            color: theme === 'dark' ? 'white' : 'black'
+          }),
+          menu: (baseStyles) => ({
+            ...baseStyles,
+            backgroundColor: theme === 'dark' ? 'gray' : 'white',
+            color: theme === 'dark' ? 'white' : 'black'
+          }),
+          option: (baseStyles, state) => ({
+            ...baseStyles,
+            backgroundColor: state.isFocused ? (theme === 'dark' ? 'darkgray' : 'lightgray') : baseStyles.backgroundColor,
+            color: theme === 'dark' ? 'white' : 'black'
+          })
+        }}
       />
 
       <Button type="submit">Buscar</Button>

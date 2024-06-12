@@ -140,11 +140,15 @@ const Gallery = () => {
           </Toggle>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-10 mx-auto px-10">
-        {currentCanchas.map((cancha) => (
-          <Card key={cancha.id} dataCancha={cancha} />
-        ))}
-      </div>
+      {currentCanchas.length > 0 ? (
+        <div className="grid grid-cols-2 gap-10 mx-auto px-10">
+          {currentCanchas.map((cancha) => (
+            <Card key={cancha.id} dataCancha={cancha} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center col-span-2">No se encontraron resultados</p>
+      )}
       <div className="flex justify-center mt-10">
         <nav>
           <ul className="flex pl-0 list-none rounded my-2 space-x-1">
