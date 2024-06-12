@@ -38,21 +38,23 @@ const Card = ({ dataCancha }) => {
 
   const handleFavoriteClick = () => {
     setIsFavorite(!isFavorite);
-
-    // Guardar en localStorage
+  
+    // Obtener los favoritos del localStorage
     const favorites = JSON.parse(localStorage.getItem('favorites')) || {};
     if (!favorites[user.id]) {
       favorites[user.id] = [];
     }
-
+  
     if (isFavorite) {
       // Eliminar de favoritos
-      favorites[user.id] = favorites[user.id].filter(favId => favId !== id);
+      favorites[user.id] = favorites[user.id].filter(fav => fav.id !== id);
     } else {
       // Agregar a favoritos
-      favorites[user.id].push(id);
+      const { Nombre, Precio_hora, Imagen_cancha } = dataCancha; // Asegúrate de tener accesso a dataCancha aquí
+      favorites[user.id].push({ id, Nombre, Precio_hora, Imagen_cancha });
     }
-
+  
+    // Guardar los favoritos actualizados en el localStorage
     localStorage.setItem('favorites', JSON.stringify(favorites));
   };
 
