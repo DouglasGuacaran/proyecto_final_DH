@@ -142,9 +142,15 @@ export default function Navbar() {
             className={`font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-background`}
           >
             {user ? (
-              <div className="p-2">
+              <div className="">
+                <Link href="/favoritos">
+                  <Button variant="link" className="text-base">
+                    Favoritos
+                  </Button>
+                </Link>
                 <a className="text-base">Bienvenido {userName}</a>
               </div>
+
             ) : (
               <li>
                 <Link href="/register">
@@ -174,6 +180,7 @@ export default function Navbar() {
                   <Menu.Button>
                     <EllipsisVerticalIcon className="text-gray-500 h-6 w-6 mt-2" />
                   </Menu.Button>
+
                   <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <Menu.Item>
                       {({ active }) => (
@@ -187,19 +194,6 @@ export default function Navbar() {
                         </Link>
                       )}
                     </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          href="/favoritos"
-                          className={`${
-                            active ? "bg-gray-100 dark:bg-gray-700" : ""
-                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                        >
-                          Favoritos
-                        </Link>
-                      )}
-                    </Menu.Item>
-
                     <Menu.Item>
                       {({ active }) => (
                         <button
