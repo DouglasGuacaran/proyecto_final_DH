@@ -123,77 +123,84 @@ export default function Search({ onSearch }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className='flex gap-10 mt-20 flex-col md:flex-row'>
-      <div className="relative">
-        <Autosuggest
-          suggestions={suggestions}
-          onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-          onSuggestionsClearRequested={onSuggestionsClearRequested}
-          getSuggestionValue={getSuggestionValue}
-          renderSuggestion={renderSuggestion}
-          inputProps={inputProps}
-          theme={themeStyles}
-          onSuggestionSelected={onSuggestionSelected}
-        />
+    <div className="flex flex-col items-center border +border-solid rounded-md ">
+      <div className="w-full p-2 text-left">
+      <p className="w-1/2 ml-4 p-2 text-sm">
+        Utiliza este buscador de canchas disponibles según el nombre, la fecha y el horario deseado. Completa todos los campos para obtener resultados precisos.
+      </p>
       </div>
-
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant={"outline"}
-            className={cn(
-              "w-[280px] md:w-[200px] lg:w-[280px] justify-start text-left font-normal",
-              !date && "text-muted-foreground",
-              errors.date && "border-red-500",
-              theme === 'dark' ? 'bg-gray-600 text-white' : 'bg-white text-black'
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "PPP", { locale: es }) : <span>Fecha</span>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            initialFocus
-            disabled={(date) => isPastDate(date)}
+      <form onSubmit={handleSubmit} className='flex gap-10 flex-col md:flex-row'>
+        <div className="relative">
+          <Autosuggest
+            suggestions={suggestions}
+            onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+            onSuggestionsClearRequested={onSuggestionsClearRequested}
+            getSuggestionValue={getSuggestionValue}
+            renderSuggestion={renderSuggestion}
+            inputProps={inputProps}
+            theme={themeStyles}
+            onSuggestionSelected={onSuggestionSelected}
           />
-        </PopoverContent>
-      </Popover>
+        </div>
 
-      <Select
-        options={timeSlots.map(time => ({ value: time, label: time }))}
-        className={`w-[280px] md:w-[200px] lg:w-[280px] ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}
-        placeholder="Hora"
-        isClearable
-        onChange={setSelectedTime}
-        styles={{
-          control: (baseStyles, state) => ({
-            ...baseStyles,
-            backgroundColor: theme === 'dark' ? 'black-600' : 'white',
-            color: theme === 'dark' ? 'white' : 'black',
-            borderColor: state.isFocused ? (theme === 'dark' ? 'white' : 'black') : 'gray'
-          }),
-          singleValue: (baseStyles) => ({
-            ...baseStyles,
-            color: theme === 'dark' ? 'white' : 'black'
-          }),
-          menu: (baseStyles) => ({
-            ...baseStyles,
-            backgroundColor: theme === 'dark' ? 'gray' : 'white',
-            color: theme === 'dark' ? 'white' : 'black'
-          }),
-          option: (baseStyles, state) => ({
-            ...baseStyles,
-            backgroundColor: state.isFocused ? (theme === 'dark' ? 'darkgray' : 'lightgray') : baseStyles.backgroundColor,
-            color: theme === 'dark' ? 'white' : 'black'
-          })
-        }}
-      />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={cn(
+                "w-[280px] md:w-[200px] lg:w-[280px] justify-start text-left font-normal",
+                !date && "text-muted-foreground",
+                errors.date && "border-red-500",
+                theme === 'dark' ? 'bg-gray-600 text-white' : 'bg-white text-black'
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "PPP", { locale: es }) : <span>Fecha</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              initialFocus
+              disabled={(date) => isPastDate(date)}
+            />
+          </PopoverContent>
+        </Popover>
 
-      <Button type="submit">Buscar</Button>
-    </form>
+        <Select
+          options={timeSlots.map(time => ({ value: time, label: time }))}
+          className={`w-[280px] md:w-[200px] lg:w-[280px] ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}
+          placeholder="Hora"
+          isClearable
+          onChange={setSelectedTime}
+          styles={{
+            control: (baseStyles, state) => ({
+              ...baseStyles,
+              backgroundColor: theme === 'dark' ? 'black-600' : 'white',
+              color: theme === 'dark' ? 'white' : 'black',
+              borderColor: state.isFocused ? (theme === 'dark' ? 'white' : 'black') : 'gray'
+            }),
+            singleValue: (baseStyles) => ({
+              ...baseStyles,
+              color: theme === 'dark' ? 'white' : 'black'
+            }),
+            menu: (baseStyles) => ({
+              ...baseStyles,
+              backgroundColor: theme === 'dark' ? 'gray' : 'white',
+              color: theme === 'dark' ? 'white' : 'black'
+            }),
+            option: (baseStyles, state) => ({
+              ...baseStyles,
+              backgroundColor: state.isFocused ? (theme === 'dark' ? 'darkgray' : 'lightgray') : baseStyles.backgroundColor,
+              color: theme === 'dark' ? 'white' : 'black'
+            })
+          }}
+        />
+
+        <Button type="submit">Buscar</Button>
+      </form>
+    </div>
   );
 }

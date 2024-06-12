@@ -58,8 +58,8 @@ const Gallery = () => {
       className={`flex flex-col my-10 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
     >
       <div className="flex flex-col gap-3 justify-center items-center mb-10">
-        <h2 className="font-medium text-lg">Filtra por Categoría</h2>
-        <h4 className="text-sm"> Pulsa el/los ícono de la categoría de tu interés</h4>
+        <h2 className="font-medium text-lg">Encuentra tu cancha según la Categoría Deportiva</h2>
+        <h4 className="text-sm"> Pulsa el/los ícono(s) de la(s) categoría(s) de tu interés</h4>
         <div className="flex gap-3">
           <div className="relative group">
             <Toggle
