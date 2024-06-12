@@ -189,6 +189,19 @@ export default function Navbar() {
                     </Menu.Item>
                     <Menu.Item>
                       {({ active }) => (
+                        <Link
+                          href="/favoritos"
+                          className={`${
+                            active ? "bg-gray-100 dark:bg-gray-700" : ""
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Favoritos
+                        </Link>
+                      )}
+                    </Menu.Item>
+
+                    <Menu.Item>
+                      {({ active }) => (
                         <button
                           className={`${
                             active ? "bg-gray-100 dark:bg-gray-700" : ""
