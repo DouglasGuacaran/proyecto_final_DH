@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "../ui/button";
 import { useTheme } from "@/context/ThemeContext";
-import { BellIcon, CircleUserIcon, EllipsisVerticalIcon } from "lucide-react";
+import { BellIcon, CircleUserIcon, EllipsisVerticalIcon, Space } from "lucide-react";
 import { Menu } from "@headlessui/react";
 
 export default function Navbar() {
@@ -144,7 +144,7 @@ export default function Navbar() {
             {user ? (
               <div className="p-2">
                 <a className="text-base">Bienvenido {userName}</a>
-              </div>
+                </div>
             ) : (
               <li>
                 <Link href="/register">
@@ -187,6 +187,7 @@ export default function Navbar() {
                         </Link>
                       )}
                     </Menu.Item>
+                    
                     <Menu.Item>
                       {({ active }) => (
                         <button
@@ -200,6 +201,7 @@ export default function Navbar() {
                       )}
                     </Menu.Item>
                   </Menu.Items>
+
                 </Menu>
               </>
             ) : (
