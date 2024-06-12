@@ -108,7 +108,7 @@ export default function Search({ onSearch }) {
   };
 
   const inputProps = {
-    placeholder: 'Buscar cancha',
+    placeholder: 'Introduce el nombre de la cancha',
     value: canchaName,
     onChange: (event, { newValue }) => setCanchaName(newValue),
     className: `w-[280px] md:w-[200px] lg:w-[280px] p-2 border ${errors.canchaName ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`
@@ -172,7 +172,7 @@ export default function Search({ onSearch }) {
         styles={{
           control: (baseStyles, state) => ({
             ...baseStyles,
-            backgroundColor: theme === 'dark' ? 'gray' : 'white',
+            backgroundColor: theme === 'dark' ? 'black-600' : 'white',
             color: theme === 'dark' ? 'white' : 'black',
             borderColor: state.isFocused ? (theme === 'dark' ? 'white' : 'black') : 'gray'
           }),
