@@ -29,6 +29,8 @@ export default function Navbar() {
           console.error("Error fetching user data:", error);
         } else {
           setRol(data.Rol);
+          console.log(data);
+          setUserName(data.Username);
         }
       }
     };
@@ -148,7 +150,7 @@ export default function Navbar() {
                     Favoritos
                   </Button>
                 </Link>
-                <a className="text-base">Bienvenido {userName}</a>
+                <a className="text-base">Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}</a>
               </div>
 
             ) : (
