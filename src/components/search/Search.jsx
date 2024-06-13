@@ -64,7 +64,22 @@ export default function Search({ onSearch }) {
     setSelectedCanchaId(suggestion.id);
   };
 
-  const handleSubmit = (event) => {
+  const checkAvailability = async (canchaId, date, time) => {
+    const dateTime = new Date(`${format(date, 'yyyy-MM-dd')}T${time}`);
+    const { data, error } = await supabase
+      .from('Reserva')
+      .select('*')
+      .eq('Cancha_id', canchaId)
+      .lte('Fecha_hora_inicio', dateTime.toISOString())
+      .gte('Fecha_hora_fin', dateTime.toISOString());
+    if (error) {
+      console.error(error);
+      return false;
+    }
+    return data.length === 0;
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // Validación de los campos
@@ -79,11 +94,12 @@ export default function Search({ onSearch }) {
     }
 
     setErrors({});
-    
-    if (selectedCanchaId) {
+
+    const isAvailable = await checkAvailability(selectedCanchaId, date, selectedTime.value);
+    if (isAvailable) {
       push(`/${selectedCanchaId}`);
     } else {
-      console.error('Cancha no encontrada');
+      alert('La cancha no está disponible en la fecha y hora seleccionadas');
     }
   };
 
