@@ -148,9 +148,9 @@ const Card = ({ dataCancha }) => {
             </Button>
           </Link>
           
-          {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
-            <Button>Reservar</Button>
-          )}
+          {/* {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
+            // <Button>Reservar</Button>
+          )} */}
         </div>
       </div>
     </div>
