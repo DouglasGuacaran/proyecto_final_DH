@@ -29,7 +29,6 @@ export default function Navbar() {
           console.error("Error fetching user data:", error);
         } else {
           setRol(data.Rol);
-          console.log(data);
           setUserName(data.Username);
         }
       }
