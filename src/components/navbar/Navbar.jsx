@@ -150,9 +150,12 @@ export default function Navbar() {
                     Favoritos
                   </Button>
                 </Link>
-                <a className="text-base">Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}</a>
+                {userName && (
+                  <span className="text-base">
+                    Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}
+                  </span>
+                )}
               </div>
-
             ) : (
               <li>
                 <Link href="/register">
