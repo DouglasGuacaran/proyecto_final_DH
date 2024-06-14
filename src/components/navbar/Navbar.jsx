@@ -152,11 +152,13 @@ export default function Navbar() {
                     </Button>
                   </Link>
                 </li>
-                <li className="flex items-center">
-                  <span className="text-base">
-                    Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}
-                  </span>
-                </li>
+                {userName && (
+                  <li className="flex items-center">
+                    <span className="text-base">
+                      Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}
+                    </span>
+                  </li>
+                )}
                 {rol === "Admin" && (
                   <>
                     <li>
