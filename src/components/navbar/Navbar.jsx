@@ -144,29 +144,19 @@ export default function Navbar() {
             className={`font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-background`}
           >
             {user ? (
-              <div className="">
-                <Link href="/favoritos">
-                  <Button variant="link" className="text-base">
-                    Favoritos
-                  </Button>
-                </Link>
-                {userName && (
+              <>
+                <li>
+                  <Link href="/favoritos">
+                    <Button variant="link" className="text-base">
+                      Favoritos
+                    </Button>
+                  </Link>
+                </li>
+                <li className="flex items-center">
                   <span className="text-base">
                     Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}
                   </span>
-                )}
-              </div>
-            ) : (
-              <li>
-                <Link href="/register">
-                  <Button variant="link" className="text-base">
-                    Crear Cuenta
-                  </Button>
-                </Link>
-              </li>
-            )}
-            {user ? (
-              <>
+                </li>
                 {rol === "Admin" && (
                   <>
                     <li>
@@ -215,13 +205,22 @@ export default function Navbar() {
                 </Menu>
               </>
             ) : (
-              <li>
-                <Link href="/login">
-                  <Button variant="link" className="text-base">
-                    Iniciar Sesión
-                  </Button>
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link href="/register">
+                    <Button variant="link" className="text-base">
+                      Crear Cuenta
+                    </Button>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login">
+                    <Button variant="link" className="text-base">
+                      Iniciar Sesión
+                    </Button>
+                  </Link>
+                </li>
+              </>
             )}
             <li>
               <Button
