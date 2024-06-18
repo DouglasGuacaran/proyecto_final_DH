@@ -17,7 +17,7 @@ const Gallery = () => {
     futbol: "Fútbol",
     tenis: "Tenis",
     paddel: "Paddel",
-    basket: "Basket"
+    basket: "Basket",
   };
 
   useEffect(() => {
@@ -58,8 +58,13 @@ const Gallery = () => {
       className={`flex flex-col my-10 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
     >
       <div className="flex flex-col gap-3 justify-center items-center mb-10">
-        <h2 className="font-medium text-lg">Encuentra tu cancha según la Categoría Deportiva</h2>
-        <h4 className="text-sm"> Pulsa el/los ícono(s) de la(s) categoría(s) de tu interés</h4>
+        <h2 className="font-medium text-lg">
+          Encuentra tu cancha según la Categoría Deportiva
+        </h2>
+        <h4 className="text-sm">
+          {" "}
+          Pulsa el/los ícono(s) de la(s) categoría(s) de tu interés
+        </h4>
         <div className="flex gap-3">
           <div className="relative group">
             <Toggle
@@ -162,7 +167,7 @@ const Gallery = () => {
         </div>
       </div>
       {currentCanchas.length > 0 ? (
-        <div className="grid grid-cols-2 gap-10 mx-auto px-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mx-auto px-10">
           {currentCanchas.map((cancha) => (
             <Card key={cancha.id} dataCancha={cancha} />
           ))}

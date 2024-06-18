@@ -1,8 +1,8 @@
-'use client';
+"use client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { createClient } from '../../utils/supabase/client';
+import { createClient } from "../../utils/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,19 +11,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from 'react';
-import Autosuggest from 'react-autosuggest';
-import Select from 'react-select';
-import { useRouter } from 'next/navigation';
-import { isBefore } from 'date-fns';
-import { useTheme } from '@/context/ThemeContext';
+import { useState } from "react";
+import Autosuggest from "react-autosuggest";
+import Select from "react-select";
+import { useRouter } from "next/navigation";
+import { isBefore } from "date-fns";
+import { useTheme } from "@/context/ThemeContext";
 
 const supabase = createClient();
 
 export default function Search({ onSearch }) {
   const [date, setDate] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const [canchaName, setCanchaName] = useState('');
+  const [canchaName, setCanchaName] = useState("");
   const [selectedCanchaId, setSelectedCanchaId] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [errors, setErrors] = useState({});
@@ -32,9 +32,9 @@ export default function Search({ onSearch }) {
 
   const fetchCanchas = async (inputValue) => {
     const { data, error } = await supabase
-      .from('Cancha')
-      .select('id, Nombre')
-      .ilike('Nombre', `%${inputValue}%`);
+      .from("Cancha")
+      .select("id, Nombre")
+      .ilike("Nombre", `%${inputValue}%`);
     if (error) {
       console.error(error);
       return [];
@@ -51,9 +51,9 @@ export default function Search({ onSearch }) {
     setSuggestions([]);
   };
 
-  const getSuggestionValue = suggestion => suggestion.Nombre;
+  const getSuggestionValue = (suggestion) => suggestion.Nombre;
 
-  const renderSuggestion = suggestion => (
+  const renderSuggestion = (suggestion) => (
     <div className="p-2 hover:bg-gray-200 cursor-pointer">
       {suggestion.Nombre}
     </div>
@@ -65,13 +65,13 @@ export default function Search({ onSearch }) {
   };
 
   const checkAvailability = async (canchaId, date, time) => {
-    const dateTime = new Date(`${format(date, 'yyyy-MM-dd')}T${time}`);
+    const dateTime = new Date(`${format(date, "yyyy-MM-dd")}T${time}`);
     const { data, error } = await supabase
-      .from('Reserva')
-      .select('*')
-      .eq('Cancha_id', canchaId)
-      .lte('Fecha_hora_inicio', dateTime.toISOString())
-      .gte('Fecha_hora_fin', dateTime.toISOString());
+      .from("Reserva")
+      .select("*")
+      .eq("Cancha_id", canchaId)
+      .lte("Fecha_hora_inicio", dateTime.toISOString())
+      .gte("Fecha_hora_fin", dateTime.toISOString());
     if (error) {
       console.error(error);
       return false;
@@ -84,39 +84,45 @@ export default function Search({ onSearch }) {
 
     // Validación de los campos
     const validationErrors = {};
-    if (!canchaName) validationErrors.canchaName = 'El nombre de la cancha es requerido';
-    if (!date) validationErrors.date = 'La fecha es requerida';
-    if (!selectedTime) validationErrors.selectedTime = 'El horario es requerido';
+    if (!canchaName)
+      validationErrors.canchaName = "El nombre de la cancha es requerido";
+    if (!date) validationErrors.date = "La fecha es requerida";
+    if (!selectedTime)
+      validationErrors.selectedTime = "El horario es requerido";
 
     if (Object.keys(validationErrors).length > 0) {
-      alert(Object.values(validationErrors).join('\n'));
+      alert(Object.values(validationErrors).join("\n"));
       return;
     }
 
     setErrors({});
 
-    const isAvailable = await checkAvailability(selectedCanchaId, date, selectedTime.value);
+    const isAvailable = await checkAvailability(
+      selectedCanchaId,
+      date,
+      selectedTime.value
+    );
     if (isAvailable) {
       push(`/${selectedCanchaId}`);
     } else {
-      alert('La cancha no está disponible en la fecha y hora seleccionadas');
+      alert("La cancha no está disponible en la fecha y hora seleccionadas");
     }
   };
 
   const generateTimeSlots = (start, end) => {
     const times = [];
-    const startHour = parseInt(start.split(':')[0], 10);
-    const endHour = parseInt(end.split(':')[0], 10);
+    const startHour = parseInt(start.split(":")[0], 10);
+    const endHour = parseInt(end.split(":")[0], 10);
 
     for (let hour = startHour; hour <= endHour; hour++) {
-      const formattedHour = hour.toString().padStart(2, '0');
+      const formattedHour = hour.toString().padStart(2, "0");
       times.push(`${formattedHour}:00`);
     }
 
     return times;
   };
 
-  const timeSlots = generateTimeSlots('08:00', '23:00');
+  const timeSlots = generateTimeSlots("08:00", "23:00");
 
   const isPastDate = (date) => {
     const today = new Date();
@@ -124,28 +130,33 @@ export default function Search({ onSearch }) {
   };
 
   const inputProps = {
-    placeholder: 'Introduce el nombre de la cancha',
+    placeholder: "Introduce el nombre de la cancha",
     value: canchaName,
     onChange: (event, { newValue }) => setCanchaName(newValue),
-    className: `w-[280px] md:w-[200px] lg:w-[280px] p-2 border ${errors.canchaName ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`
+    className: `w-[280px] md:w-[200px] lg:w-[280px] p-2 border ${errors.canchaName ? "border-red-500" : "border-gray-300"} rounded-md focus:outline-none ${theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"}`,
   };
 
   const themeStyles = {
-    container: 'relative',
-    suggestionsContainer: `absolute z-10 ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} rounded-md mt-1 w-[280px] md:w-[200px] lg:w-[280px]`,
-    suggestionsList: 'list-none p-0 m-0',
-    suggestion: 'p-2',
-    suggestionHighlighted: 'bg-gray-200'
+    container: "relative",
+    suggestionsContainer: `absolute z-10 ${theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"} rounded-md mt-1 w-[280px] md:w-[200px] lg:w-[280px]`,
+    suggestionsList: "list-none p-0 m-0",
+    suggestion: "p-2",
+    suggestionHighlighted: "bg-gray-200",
   };
 
   return (
-    <div className="flex flex-col items-center border +border-solid rounded-md ">
-      <div className="w-full p-2 text-left">
-      <p className="w-1/2 ml-4 p-2 text-sm">
-        Utiliza este buscador de canchas disponibles según el nombre, la fecha y el horario deseado. Completa todos los campos para obtener resultados precisos.
-      </p>
+    <div className="flex flex-col items-center bg-gray-300 rounded-md pb-4 mt-5">
+      <div className="w-full p-2 text-center sm:text-left">
+        <p className="w-full sm:w-3/4 lg:w-1/2 sm:ml-4 mx-auto p-2 text-sm">
+          Utiliza este buscador de canchas disponibles según el nombre, la fecha
+          y el horario deseado. Completa todos los campos para obtener
+          resultados precisos.
+        </p>
       </div>
-      <form onSubmit={handleSubmit} className='flex gap-10 flex-col md:flex-row'>
+      <form
+        onSubmit={handleSubmit}
+        className="flex gap-10 flex-col md:flex-row"
+      >
         <div className="relative">
           <Autosuggest
             suggestions={suggestions}
@@ -167,7 +178,9 @@ export default function Search({ onSearch }) {
                 "w-[280px] md:w-[200px] lg:w-[280px] justify-start text-left font-normal",
                 !date && "text-muted-foreground",
                 errors.date && "border-red-500",
-                theme === 'dark' ? 'bg-gray-600 text-white' : 'bg-white text-black'
+                theme === "dark"
+                  ? "bg-gray-600 text-white"
+                  : "bg-white text-black"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -186,32 +199,40 @@ export default function Search({ onSearch }) {
         </Popover>
 
         <Select
-          options={timeSlots.map(time => ({ value: time, label: time }))}
-          className={`w-[280px] md:w-[200px] lg:w-[280px] ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}
+          options={timeSlots.map((time) => ({ value: time, label: time }))}
+          className={`w-[280px] md:w-[200px] lg:w-[280px] ${theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"}`}
           placeholder="Hora"
           isClearable
           onChange={setSelectedTime}
           styles={{
             control: (baseStyles, state) => ({
               ...baseStyles,
-              backgroundColor: theme === 'dark' ? 'black-600' : 'white',
-              color: theme === 'dark' ? 'white' : 'black',
-              borderColor: state.isFocused ? (theme === 'dark' ? 'white' : 'black') : 'gray'
+              backgroundColor: theme === "dark" ? "black-600" : "white",
+              color: theme === "dark" ? "white" : "black",
+              borderColor: state.isFocused
+                ? theme === "dark"
+                  ? "white"
+                  : "black"
+                : "gray",
             }),
             singleValue: (baseStyles) => ({
               ...baseStyles,
-              color: theme === 'dark' ? 'white' : 'black'
+              color: theme === "dark" ? "white" : "black",
             }),
             menu: (baseStyles) => ({
               ...baseStyles,
-              backgroundColor: theme === 'dark' ? 'gray' : 'white',
-              color: theme === 'dark' ? 'white' : 'black'
+              backgroundColor: theme === "dark" ? "gray" : "white",
+              color: theme === "dark" ? "white" : "black",
             }),
             option: (baseStyles, state) => ({
               ...baseStyles,
-              backgroundColor: state.isFocused ? (theme === 'dark' ? 'darkgray' : 'lightgray') : baseStyles.backgroundColor,
-              color: theme === 'dark' ? 'white' : 'black'
-            })
+              backgroundColor: state.isFocused
+                ? theme === "dark"
+                  ? "darkgray"
+                  : "lightgray"
+                : baseStyles.backgroundColor,
+              color: theme === "dark" ? "white" : "black",
+            }),
           }}
         />
 
