@@ -154,7 +154,8 @@ export default function Navbar() {
                 {userName && (
                   <li className="flex items-center">
                     <span className="text-base">
-                      Bienvenido {userName.charAt(0).toUpperCase() + userName.slice(1)}
+                      Bienvenido{" "}
+                      {userName.charAt(0).toUpperCase() + userName.slice(1)}
                     </span>
                   </li>
                 )}
@@ -190,6 +191,20 @@ export default function Navbar() {
                         </Link>
                       )}
                     </Menu.Item>
+
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          href="/reservas"
+                          className={`${
+                            active ? "bg-gray-100 dark:bg-gray-700" : ""
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Mis Reservas
+                        </Link>
+                      )}
+                    </Menu.Item>
+
                     <Menu.Item>
                       {({ active }) => (
                         <button
