@@ -8,7 +8,7 @@ import EditarReservas from '@/components/admin/EditarReservas';
 import withAuth from '@/components/hoc/withAuth';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
-import Tabs from '@/components/ui/Tabs';
+import Tabs from '@/components/ui/tabs';
 
 function AdminPage() {
 const tabs = [
