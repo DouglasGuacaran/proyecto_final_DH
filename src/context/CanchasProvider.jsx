@@ -5,24 +5,24 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 const CanchasContext = createContext();
 
 export const useCanchas = () => {
-  return useContext(CanchasContext);
+    return useContext(CanchasContext);
 };
 
 export const CanchasProvider = ({ children }) => {
-  const [canchas, setCanchas] = useState([]);
+    const [canchas, setCanchas] = useState([]);
 
-  async function fetchCanchas() {
-    const supabase = createClient();
-    const { data: canchas, error } = await supabase
-      .from('Cancha')
-      .select(
-        `
+    async function fetchCanchas() {
+        const supabase = createClient();
+        const { data: canchas, error } = await supabase
+            .from('Cancha')
+            .select(
+                `
           id,
           Nombre,
-          Superficie,
           Tamanio,
           Precio_hora,
           Disciplina_id,
+          Superficie_id,
           Imagen_cancha (
           Url_img
           ),
@@ -30,29 +30,30 @@ export const CanchasProvider = ({ children }) => {
           Nombre
           )
         `
-      )
-      .order('id', { foreignTable: 'Imagen_cancha', ascending: true });
+            )
+            .order('id', { foreignTable: 'Imagen_cancha', ascending: true });
 
-    if (error) {
-      console.error('Error al obtener las canchas e imágenes:', error);
-      return;
+        if (error) {
+            console.error('Error al obtener las canchas e imágenes:', error);
+            return;
+        }
+
+        const dataCanchas = canchas.map((cancha) => ({
+            ...cancha,
+            imagen:
+                cancha.Imagen_cancha[0]?.Url_img || 'default-image-path.jpg',
+        }));
+
+        setCanchas(dataCanchas);
     }
 
-    const dataCanchas = canchas.map((cancha) => ({
-      ...cancha,
-      imagen: cancha.Imagen_cancha[0]?.Url_img || 'default-image-path.jpg',
-    }));
+    useEffect(() => {
+        fetchCanchas();
+    }, []);
 
-    setCanchas(dataCanchas);
-  }
-
-  useEffect(() => {
-    fetchCanchas();
-  }, []);
-
-  return (
-    <CanchasContext.Provider value={{ canchas, fetchCanchas }}>
-      {children}
-    </CanchasContext.Provider>
-  );
+    return (
+        <CanchasContext.Provider value={{ canchas, fetchCanchas }}>
+            {children}
+        </CanchasContext.Provider>
+    );
 };

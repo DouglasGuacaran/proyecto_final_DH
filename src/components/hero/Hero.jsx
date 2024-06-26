@@ -3,7 +3,8 @@ import React from "react";
 import Search from "../search/Search";
 import { useTheme } from "@/context/ThemeContext";
 import Image from "next/image";
-export default function Hero() {
+
+export default function Hero({ onSearch, clearSearchResults }) {
   const { theme } = useTheme();
 
   return (
@@ -31,7 +32,7 @@ export default function Hero() {
           />
         </div>
       </div>
-      <Search />
+      <Search onSearch={onSearch} clearSearchResults={clearSearchResults} />
     </section>
   );
 }
