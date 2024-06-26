@@ -145,7 +145,7 @@ export default function Search({ onSearch }) {
   };
 
   return (
-    <div className="flex flex-col items-center bg-gray-300 rounded-md pb-4 mt-5">
+    <div className="flex flex-col items-center bg-gray-300 rounded-md pb-4 mt-5 z-10">
       <div className="w-full p-2 text-center sm:text-left">
         <p className="w-full sm:w-3/4 lg:w-1/2 sm:ml-4 mx-auto p-2 text-sm">
           Utiliza este buscador de canchas disponibles según el nombre, la fecha

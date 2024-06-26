@@ -8,10 +8,17 @@ export default function Hero({ onSearch, clearSearchResults }) {
   const { theme } = useTheme();
 
   return (
-    <section
-      className={`w-full flex flex-col justify-center items-center mt-10 pt-20 pb-10 ${theme === "dark" ? "bg-gray-800 text-white" : "bg-[#F4F4F4] text-black"}`}
-    >
-      <div className="flex justify-evenly w-full max-w-screen-xl">
+    <section className={`relative w-full flex flex-col justify-center items-center mt-10 pt-20 pb-10 ${theme === "dark" ? "bg-gray-800 text-white" : "bg-[#F4F4F4] text-black"}`}>
+      
+      <video
+  className="absolute top-0 left-0 w-full h-full object-cover -z-9 opacity-75"
+  src="/video/video.mp4"
+  autoPlay
+  loop
+  muted
+/>
+
+      <div className="relative flex justify-evenly w-full max-w-screen-xl z-1">
         <div className="flex flex-col gap-8 justify-center">
           <h1 className="text-5xl font-medium">Juega con el corazón</h1>
           <h2 className="text-3xl font-medium">Tu cancha te espera</h2>
