@@ -28,7 +28,6 @@ import {
     TwitterIcon,
     WhatsappIcon,
 } from 'react-share';
-import { LucideLogIn } from 'lucide-react';
 
 export default function Page() {
     const { id } = useParams();
@@ -42,9 +41,10 @@ export default function Page() {
     const { supabase } = useUsuarios();
     const [reservas, setReservas] = useState([]);
     const today = new Date();
-    const nextMonth = addMonths(today, 1);
+    // const nextMonth = addMonths(today, 1);
     const [month1, setMonth1] = useState(today);
-    const [month2, setMonth2] = useState(nextMonth);
+    // const [month2, setMonth2] = useState(nextMonth);
+    const [selectedDay, setSelectedDay] = useState(null);
 
     useEffect(() => {
         const fetchUsuarioId = async () => {
@@ -146,8 +146,34 @@ export default function Page() {
             getReservas(id);
         }
     }, [id]);
-    // console.log(reservas);
-    // console.log(id);
+
+    function handleSelectedDayChange(selectedDay) {
+        // Aquí puedes manejar el día seleccionado, por ejemplo, guardarlo en el estado del componente Page
+        console.log(selectedDay); // O cualquier otra lógica que necesites
+        const formattedDay = formatDay(selectedDay);
+        setSelectedDay(formattedDay);
+    }
+    // const getReservationsByDay = (reservations) => {
+    //     const pad = (num) => (num < 10 ? `0${num}` : num);
+    //     const reservationsByDay = {};
+    //     reservations.forEach((reservation) => {
+    //         const reservationDate = new Date(reservation.Fecha_hora_inicio);
+    //         const dateString = `${pad(reservationDate.getDate())}/${pad(reservationDate.getMonth() + 1)}/${reservationDate.getFullYear()}`;
+    //         if (reservationsByDay[dateString]) {
+    //             reservationsByDay[dateString]++;
+    //         } else {
+    //             reservationsByDay[dateString] = 1;
+    //         }
+    //     });
+    //     return reservationsByDay;
+    // };
+
+    // const reservationsByDay = getReservationsByDay(reservas);
+
+    const formatDay = (date) => {
+        const pad = (num) => (num < 10 ? `0${num}` : num);
+        return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+    };
 
     const getReservationsByDay = (reservations) => {
         const pad = (num) => (num < 10 ? `0${num}` : num);
@@ -155,22 +181,43 @@ export default function Page() {
         reservations.forEach((reservation) => {
             const reservationDate = new Date(reservation.Fecha_hora_inicio);
             const dateString = `${pad(reservationDate.getDate())}/${pad(reservationDate.getMonth() + 1)}/${reservationDate.getFullYear()}`;
-            if (reservationsByDay[dateString]) {
-                reservationsByDay[dateString]++;
-            } else {
-                reservationsByDay[dateString] = 1;
+            const startTime = `${pad(reservationDate.getHours())}:${pad(reservationDate.getMinutes())}`;
+            const endDate = new Date(reservation.Fecha_hora_fin);
+            const endTime = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+
+            if (!reservationsByDay[dateString]) {
+                reservationsByDay[dateString] = [];
             }
+            // Añade tanto la hora de inicio como la de fin a la lista para ese día
+            reservationsByDay[dateString].push({
+                start: startTime,
+                end: endTime,
+            });
         });
         return reservationsByDay;
     };
 
+    const checkIfTimeSlotIsOccupied = (
+        horario,
+        selectedDay,
+        reservationsByDay
+    ) => {
+        if (!selectedDay || !reservationsByDay[selectedDay]) return false; // Si no hay día seleccionado o no hay reservas para ese día, asume que está disponible
+        // Aquí necesitas lógica para determinar si el horario específico está ocupado
+        // Esto dependerá de cómo estén estructurados tus horarios y reservas
+        // Por ejemplo, si tus horarios son strings en formato 'HH:mm' y tus reservas también usan ese formato
+        return reservationsByDay[selectedDay].some(
+            (reservation) =>
+                horario >= reservation.start && horario < reservation.end
+        );
+    };
+
     const reservationsByDay = getReservationsByDay(reservas);
-    // console.log("Reservations by day:", reservationsByDay);
+    console.log('Reservations by day with times:', reservationsByDay);
 
     const {
         Nombre,
         Precio_hora,
-        Superficie,
         Tamanio,
         Caracteristicas,
         Imagen_cancha,
@@ -248,9 +295,6 @@ export default function Page() {
             setCaracteristicasCancha(convertToArray(Caracteristicas));
         }
     }, [Caracteristicas]);
-    // if (!horarios || horarios.length === 0) {
-    //     return <div>Cargando horarios...</div>;
-    // }
 
     return (
         <>
@@ -345,6 +389,8 @@ export default function Page() {
                                 Fechas disponibles
                             </h6>
                             <CalendarioDisponibilidad
+                                onDaySelect={handleSelectedDayChange}
+                                canchaId={cancha.id}
                                 month={month1}
                                 onMonthChange={setMonth1}
                                 reservationsByDay={reservationsByDay}
@@ -358,6 +404,33 @@ export default function Page() {
                             </h6>
                             <div className="grid grid-cols-3 gap-4">
                                 {horarios && horarios.length > 0 ? (
+                                    horarios.map((horario) => {
+                                        const isOccupied =
+                                            checkIfTimeSlotIsOccupied(
+                                                horario,
+                                                selectedDay,
+                                                reservationsByDay
+                                            );
+                                        return (
+                                            <button
+                                                key={horario}
+                                                disabled={isOccupied} // Deshabilita el botón si el horario está ocupado
+                                                className={`p-2 rounded-lg ${isOccupied ? 'bg-red-500 text-white' : selectedTimeSlots.includes(horario) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
+                                                onClick={() =>
+                                                    !isOccupied &&
+                                                    handleTimeSlotClick(horario)
+                                                }
+                                            >
+                                                {horario}
+                                            </button>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="col-span-3 text-center">
+                                        Cargando horarios...
+                                    </div>
+                                )}
+                                {/* {horarios && horarios.length > 0 ? (
                                     horarios.map((horario) => (
                                         <button
                                             key={horario}
@@ -373,7 +446,7 @@ export default function Page() {
                                     <div className="col-span-3 text-center">
                                         Cargando horarios...
                                     </div>
-                                )}
+                                )} */}
                             </div>
                         </div>
                     </div>

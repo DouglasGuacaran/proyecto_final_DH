@@ -68,7 +68,6 @@ const EditarCanchaModal = ({ isOpen, onClose, canchaId, onEdit, theme }) => {
 
         fetchCancha();
     }, [canchaId]);
-    console.log(horarios);
 
     const handleCaracteristicaChange = (event) => {
         const { value, checked } = event.target;
