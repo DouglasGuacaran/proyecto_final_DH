@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { addDays, startOfDay, subDays } from 'date-fns';
 
 function CalendarioDisponibilidad({
     className,
@@ -17,6 +18,8 @@ function CalendarioDisponibilidad({
     ...props
 }) {
     const [selectedDay, setSelectedDay] = useState(null);
+    const yesterday = subDays(startOfDay(new Date()), 1);
+    const disabledDays = { before: addDays(yesterday, 1) };
 
     const handleDayClick = (day, { selected }) => {
         if (selected) {
@@ -65,6 +68,7 @@ function CalendarioDisponibilidad({
         booked: emptyDays,
         almostFull: partiallyFilledDays,
         full: fullyFilledDays,
+        disabled: disabledDays,
     };
 
     const modifiersClassNames = {
