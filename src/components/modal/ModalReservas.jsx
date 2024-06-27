@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import Swal from 'sweetalert2';
+import { useTheme } from '@/context/ThemeContext';
 
 const ModalReservas = ({
     isOpen,
@@ -24,6 +25,7 @@ const ModalReservas = ({
 }) => {
     const [nombreContacto, setNombreContacto] = useState(usuarioNombre);
     const [telefonoContacto, setTelefonoContacto] = useState(usuarioTelefono);
+    const { theme } = useTheme();
 
     useEffect(() => {
         setNombreContacto(usuarioNombre);
@@ -99,8 +101,10 @@ const ModalReservas = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center mt-20 overflow-auto">
+            <div
+                className={`bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 my-10 ${theme === 'dark' ? 'text-white' : 'text-black'} max-h-full overflow-y-auto mt-20`}
+            >
                 <div className="flex justify-end">
                     <button
                         onClick={onClose}
@@ -134,7 +138,7 @@ const ModalReservas = ({
                     <label className="block mb-2">Nombre de contacto</label>
                     <input
                         type="text"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                        className="w-full px-3 py-2 border rounded-lg focus:outline-none dark:bg-gray-700"
                         value={nombreContacto}
                         onChange={handleNombreContactoChange}
                     />
@@ -144,7 +148,7 @@ const ModalReservas = ({
                     <label className="block mb-2">Teléfono de contacto</label>
                     <input
                         type="tel"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                        className="w-full px-3 py-2 border rounded-lg focus:outline-none dark:bg-gray-700"
                         value={telefonoContacto}
                         onChange={handleTelefonoContactoChange}
                     />
