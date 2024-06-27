@@ -28,7 +28,6 @@ import {
     TwitterIcon,
     WhatsappIcon,
 } from 'react-share';
-import { LucideLogIn } from 'lucide-react';
 
 export default function Page() {
     const { id } = useParams();
@@ -42,9 +41,9 @@ export default function Page() {
     const { supabase } = useUsuarios();
     const [reservas, setReservas] = useState([]);
     const today = new Date();
-    const nextMonth = addMonths(today, 1);
     const [month1, setMonth1] = useState(today);
-    const [month2, setMonth2] = useState(nextMonth);
+    const [selectedDay, setSelectedDay] = useState(null);
+    const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
 
     useEffect(() => {
         const fetchUsuarioId = async () => {
@@ -146,31 +145,63 @@ export default function Page() {
             getReservas(id);
         }
     }, [id]);
-    // console.log(reservas);
-    // console.log(id);
 
+    function handleSelectedDayChange(selectedDay) {
+        const formattedDay = formatDay(selectedDay);
+        setSelectedDay(formattedDay);
+        setSelectedTimeSlots([]);
+    }
+
+    const formatDay = (date) => {
+        if (!(date instanceof Date) || date === null) {
+            console.error(
+                'formatDay fue llamado con un argumento no válido:',
+                date
+            );
+            return 'Fecha no válida';
+        }
+
+        const pad = (num) => (num < 10 ? `0${num}` : num);
+        return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`;
+    };
     const getReservationsByDay = (reservations) => {
         const pad = (num) => (num < 10 ? `0${num}` : num);
         const reservationsByDay = {};
         reservations.forEach((reservation) => {
             const reservationDate = new Date(reservation.Fecha_hora_inicio);
-            const dateString = `${pad(reservationDate.getDate())}/${pad(reservationDate.getMonth() + 1)}/${reservationDate.getFullYear()}`;
-            if (reservationsByDay[dateString]) {
-                reservationsByDay[dateString]++;
-            } else {
-                reservationsByDay[dateString] = 1;
+            const dateString = `${pad(reservationDate.getDate())}-${pad(reservationDate.getMonth() + 1)}-${reservationDate.getFullYear()}`;
+            const startTime = `${pad(reservationDate.getHours())}:${pad(reservationDate.getMinutes())}`;
+            const endDate = new Date(reservation.Fecha_hora_fin);
+            const endTime = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+
+            if (!reservationsByDay[dateString]) {
+                reservationsByDay[dateString] = [];
             }
+            reservationsByDay[dateString].push({
+                start: startTime,
+                end: endTime,
+            });
         });
         return reservationsByDay;
     };
 
+    const checkIfTimeSlotIsOccupied = (
+        horario,
+        selectedDay,
+        reservationsByDay
+    ) => {
+        if (!selectedDay || !reservationsByDay[selectedDay]) return false;
+        return reservationsByDay[selectedDay].some(
+            (reservation) =>
+                horario >= reservation.start && horario < reservation.end
+        );
+    };
+
     const reservationsByDay = getReservationsByDay(reservas);
-    // console.log("Reservations by day:", reservationsByDay);
 
     const {
         Nombre,
         Precio_hora,
-        Superficie,
         Tamanio,
         Caracteristicas,
         Imagen_cancha,
@@ -217,16 +248,54 @@ export default function Page() {
             console.log('Reservation created:', data);
         }
     };
-    const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
-    console.log(selectedTimeSlots);
-    let horarios = convertToArray(cancha.Horarios);
+
+    let horarios = [];
+
+    if (cancha.Horarios) {
+        horarios = convertToArray(cancha.Horarios).sort((a, b) => {
+            const horaA = a.split(':').map(Number);
+            const horaB = b.split(':').map(Number);
+            return horaA[0] * 60 + horaA[1] - (horaB[0] * 60 + horaB[1]);
+        });
+    } else {
+        console.log('Los horarios aún no están disponibles.');
+    }
+
+    const [showCorrelativeMessage, setShowCorrelativeMessage] = useState(false);
+
     const handleTimeSlotClick = (timeSlot) => {
-        setSelectedTimeSlots((prevSelected) =>
-            prevSelected.includes(timeSlot)
-                ? prevSelected.filter((slot) => slot !== timeSlot)
-                : [...prevSelected, timeSlot]
-        );
+        const timeSlotMinutes = convertTimeToMinutes(timeSlot);
+        const isCorrelative = selectedTimeSlots.some((slot) => {
+            const slotMinutes = convertTimeToMinutes(slot);
+            return Math.abs(slotMinutes - timeSlotMinutes) === 60;
+        });
+
+        if (
+            selectedTimeSlots.length === 1 &&
+            selectedTimeSlots.includes(timeSlot)
+        ) {
+            setSelectedTimeSlots([]);
+        } else if (selectedTimeSlots.length === 0 || isCorrelative) {
+            setSelectedTimeSlots((prevSelected) =>
+                prevSelected.includes(timeSlot)
+                    ? prevSelected.filter((slot) => slot !== timeSlot)
+                    : [...prevSelected, timeSlot].sort(
+                          (a, b) =>
+                              convertTimeToMinutes(a) - convertTimeToMinutes(b)
+                      )
+            );
+            setShowCorrelativeMessage(false);
+        } else {
+            // Mostrar mensaje de error o manejar la selección no correlativa.
+            console.log('Por favor, seleccione horarios correlativos.');
+            setShowCorrelativeMessage(true);
+        }
     };
+
+    function convertTimeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
 
     const shareUrl = `http://localhost:3000/${id}`; // Cambiar a la URL real de tu sitio
     const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
@@ -248,9 +317,6 @@ export default function Page() {
             setCaracteristicasCancha(convertToArray(Caracteristicas));
         }
     }, [Caracteristicas]);
-    // if (!horarios || horarios.length === 0) {
-    //     return <div>Cargando horarios...</div>;
-    // }
 
     return (
         <>
@@ -328,53 +394,67 @@ export default function Page() {
                 </div>
 
                 <div
-                    className={`w-full max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6`}
+                    className={`w-full mt-5 max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6 flex flex-col sm:flex-row`}
                 >
-                    <h6
-                        className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}
-                    >
-                        Proximas fechas disponibles
-                    </h6>
-                    <div
-                        className={`w-full max-w-4xl ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-100 text-black border-gray-200'} rounded-lg shadow p-6 flex`}
-                    >
-                        <div className="w-1/2">
-                            <h6
-                                className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}
-                            >
-                                Fechas disponibles
-                            </h6>
-                            <CalendarioDisponibilidad
-                                month={month1}
-                                onMonthChange={setMonth1}
-                                reservationsByDay={reservationsByDay}
-                            />
+                    <div className="w-full sm:w-1/2 flex flex-col justify-center items-center">
+                        <h6
+                            className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}
+                        >
+                            Fechas disponibles
+                        </h6>
+                        <CalendarioDisponibilidad
+                            onDaySelect={handleSelectedDayChange}
+                            canchaId={cancha.id}
+                            month={month1}
+                            onMonthChange={setMonth1}
+                            reservationsByDay={reservationsByDay}
+                            showCorrelativeMessage={showCorrelativeMessage}
+                        />
+                    </div>
+                    <div className="w-full sm:w-1/2">
+                        <h6
+                            className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}
+                        >
+                            Horarios disponibles
+                        </h6>
+                        <div className="grid grid-cols-3 gap-4">
+                            {horarios && horarios.length > 0 ? (
+                                <>
+                                    {horarios.map((horario) => {
+                                        const isOccupied =
+                                            checkIfTimeSlotIsOccupied(
+                                                horario,
+                                                selectedDay,
+                                                reservationsByDay
+                                            );
+                                        return (
+                                            <button
+                                                key={horario}
+                                                disabled={isOccupied} // Deshabilita el botón si el horario está ocupado
+                                                className={`p-2 rounded-lg ${isOccupied ? 'bg-red-500 text-white' : selectedTimeSlots.includes(horario) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
+                                                onClick={() =>
+                                                    !isOccupied &&
+                                                    handleTimeSlotClick(horario)
+                                                }
+                                            >
+                                                {horario}
+                                            </button>
+                                        );
+                                    })}
+                                </>
+                            ) : (
+                                <div className="col-span-3 text-center">
+                                    Cargando horarios...
+                                </div>
+                            )}
                         </div>
-                        <div className="w-1/2 flex flex-col items-center">
-                            <h6
-                                className={`mb-4 text-center text-xl font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}
-                            >
-                                Horarios disponibles
-                            </h6>
-                            <div className="grid grid-cols-3 gap-4">
-                                {horarios && horarios.length > 0 ? (
-                                    horarios.map((horario) => (
-                                        <button
-                                            key={horario}
-                                            className={`p-2 rounded-lg ${selectedTimeSlots.includes(horario) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
-                                            onClick={() =>
-                                                handleTimeSlotClick(horario)
-                                            }
-                                        >
-                                            {horario}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="col-span-3 text-center">
-                                        Cargando horarios...
-                                    </div>
-                                )}
-                            </div>
+                        <div>
+                            {showCorrelativeMessage && (
+                                <div className="text-center mt-4 text-red-500">
+                                    Solo se permite elegir horarios
+                                    correlativos.
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -455,6 +535,12 @@ export default function Page() {
                 canchaName={Nombre}
                 canchaDireccion={cancha.Direccion}
                 canchaLocalidad={cancha.Localidad}
+                selectedTimeSlots={selectedTimeSlots}
+                horarios={horarios}
+                selectedDay={selectedDay}
+                checkIfTimeSlotIsOccupied={checkIfTimeSlotIsOccupied}
+                handleTimeSlotClick={handleTimeSlotClick}
+                reservationsByDay={reservationsByDay}
                 usuarioNombre={usuario?.Nombre || ''}
                 usuarioTelefono={usuario?.Telefono || ''}
                 canchaCaracteristicas={caracteristicasCancha}
