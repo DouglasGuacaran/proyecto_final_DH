@@ -69,100 +69,88 @@ const Card = ({ dataCancha }) => {
   const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
 
   return (
-    <Link href={`/${id}`}>
-      <div
-        className={`w-full max-w-sm ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-200"} rounded-lg shadow flex flex-col justify-between`}
-      >
-        <div className=" flex max-w-full items-center justify-end mt-5 mb-5 mr-10">
-          {user && ( // Mostrar el botón de Favorito solo si el usuario está logueado
-            <button
-              className={`focus:outline-none ${isFavorite ? "text-red-500" : "text-gray-500"}`}
-              onClick={handleFavoriteClick}
-            >
-              <FontAwesomeIcon icon={faHeart} size="lg" />
-            </button>
-          )}
-        </div>
+    <div
+      className={`w-full max-w-sm ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-200"} rounded-lg shadow flex flex-col justify-between`}
+    >
+      <div className="flex max-w-full items-center justify-end mt-5 mb-5 mr-10">
+        {user && ( // Mostrar el botón de Favorito solo si el usuario está logueado
+          <button
+            className={`focus:outline-none ${isFavorite ? "text-red-500" : "text-gray-500"}`}
+            onClick={handleFavoriteClick}
+          >
+            <FontAwesomeIcon icon={faHeart} size="lg" />
+          </button>
+        )}
+      </div>
 
-        {Imagen_cancha.length > 1 ? (
-          <Slider {...settings}>
-            {Imagen_cancha.map((imagen, index) => (
-              <div key={index} className="relative w-full h-64">
-                <Image
-                  src={imagen.Url_img}
-                  alt={`Imagen de la Cancha ${index + 1}`}
-                  layout="fill"
-                  sizes="(max-width: 768px) 100vw,
+      {Imagen_cancha.length > 1 ? (
+        <Slider {...settings}>
+          {Imagen_cancha.map((imagen, index) => (
+            <div key={index} className="relative w-full h-64">
+              <Image
+                src={imagen.Url_img}
+                alt={`Imagen de la Cancha ${index + 1}`}
+                layout="fill"
+                sizes="(max-width: 768px) 100vw,
                 (max-width: 1200px) 50vw,
                 33vw"
-                  // width={500}
-                  // height={300}
-                  objectFit="cover"
-                  className="rounded-t-lg cursor-pointer"
-                  // onClick={() => window.open(imagen.Url_img, '_blank')}
+                objectFit="cover"
+                className="rounded-t-lg cursor-pointer"
+                onClick={() => window.location.href = `/${id}`}
+              />
+            </div>
+          ))}
+        </Slider>
+      ) : (
+        <div className="relative w-full h-64">
+          <Image
+            src={Imagen_cancha[0]?.Url_img || "/default-image.jpg"}
+            alt={`Imagen de la Cancha`}
+            layout="fill"
+            objectFit="cover"
+            className="rounded-t-lg cursor-pointer"
+            onClick={() => window.location.href = `/${id}`}
+          />
+        </div>
+      )}
 
-                  onClick={() => window.open(imagen.Url_img, "_blank")}
-                />
-              </div>
-            ))}
-          </Slider>
-        ) : (
-          <div className="relative w-full h-64">
-            <Image
-              src={Imagen_cancha[0]?.Url_img || "/default-image.jpg"}
-              alt={`Imagen de la Cancha`}
-              layout="fill"
-              // width={500}
-              // height={300}
-              objectFit="cover"
-              className="rounded-t-lg cursor-pointer"
-              // onClick={() => window.open(Imagen_cancha[0]?.Url_img, '_blank')}
-            />
+      <div className="mx-5 my-5">
+        <div className="flex justify-between items-center">
+          <h5 className="text-lg font-semibold tracking-tight w-full truncate">
+            {Nombre}
+          </h5>
+          <button
+            onClick={() => setShareVisible(!shareVisible)}
+            className="ml-2 text-black-500"
+          >
+            <FaShareAlt size={24} />
+          </button>
+        </div>
+
+        {shareVisible && (
+          <div className="flex justify-evenly my-2">
+            <FacebookShareButton url={shareUrl} quote={shareTitle}>
+              <FacebookIcon size={32} round />
+            </FacebookShareButton>
+            <TwitterShareButton url={shareUrl} title={shareTitle}>
+              <TwitterIcon size={32} round />
+            </TwitterShareButton>
+            <WhatsappShareButton url={shareUrl} title={shareTitle}>
+              <WhatsappIcon size={32} round />
+            </WhatsappShareButton>
           </div>
         )}
 
-        <div className="mx-5 my-5">
-          <div className="flex justify-between items-center">
-            <h5 className="text-lg font-semibold tracking-tight w-full truncate">
-              {Nombre}
-            </h5>
-            <button
-              onClick={() => setShareVisible(!shareVisible)}
-              className="ml-2 text-black-500"
-            >
-              <FaShareAlt size={24} />
-            </button>
-          </div>
-
-          {shareVisible && (
-            <div className="flex justify-evenly my-2">
-              <FacebookShareButton url={shareUrl} quote={shareTitle}>
-                <FacebookIcon size={32} round />
-              </FacebookShareButton>
-              <TwitterShareButton url={shareUrl} title={shareTitle}>
-                <TwitterIcon size={32} round />
-              </TwitterShareButton>
-              <WhatsappShareButton url={shareUrl} title={shareTitle}>
-                <WhatsappIcon size={32} round />
-              </WhatsappShareButton>
-            </div>
-          )}
-
-          <div className="flex items-center justify-center mt-4">
-            <span className="text-xl font-bold">${Precio_hora}</span>
-          </div>
-          <div className="flex justify-evenly mt-4">
-            <Link href={`/${id}`}>
-              <Button variant="outline">Detalle</Button>
-            </Link>
-
-            {/* {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
-            // <Button>Reservar</Button>
-          )} */}
-          </div>
+        <div className="flex items-center justify-center mt-4">
+          <span className="text-xl font-bold">${Precio_hora}</span>
+        </div>
+        <div className="flex justify-evenly mt-4">
+          <Link href={`/${id}`}>
+            <Button variant="outline">Detalle</Button>
+          </Link>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
