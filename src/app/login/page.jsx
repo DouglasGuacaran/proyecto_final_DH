@@ -60,8 +60,9 @@ const Page = () => {
                     </div>
                     <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-700">
                         <form className="space-y-4" onSubmit={handleSubmit}>
+                            
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">Correo electrónico</Label>
                                 <Input id="email" placeholder="Ingrese su correo electrónico" type="email" value={formData.email} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
@@ -73,9 +74,9 @@ const Page = () => {
                             </Button>
                         </form>
                         <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                            No tiene una cuenta?{" "}
+                        Inicio de sesión obligatorio, si no tienes cuenta con nosotros deberás registarte{" "}
                             <Link className="font-medium underline" href="../register">
-                                Regístrese
+                                acá
                             </Link>
                         </div>
                     </div>

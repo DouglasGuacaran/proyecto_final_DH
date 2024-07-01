@@ -44,6 +44,8 @@ export default function Page() {
     const [month1, setMonth1] = useState(today);
     const [selectedDay, setSelectedDay] = useState(null);
     const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+    const [selectedTimesInfo, setSelectedTimesInfo] = useState(''); // Nuevo estado para la información de la hora seleccionada
+    const [showCorrelativeMessage, setShowCorrelativeMessage] = useState(false); // Añadir el estado showCorrelativeMessage
 
     useEffect(() => {
         const fetchUsuarioId = async () => {
@@ -150,6 +152,7 @@ export default function Page() {
         const formattedDay = formatDay(selectedDay);
         setSelectedDay(formattedDay);
         setSelectedTimeSlots([]);
+        setSelectedTimesInfo(''); // Limpiar la información de la hora seleccionada cuando se cambia el día
     }
 
     const formatDay = (date) => {
@@ -249,53 +252,83 @@ export default function Page() {
         }
     };
 
-    let horarios = [];
+    const generateTimeIntervals = (start, end) => {
+        const intervals = [];
+        let current = new Date(start);
+        const endDate = new Date(end);
 
-    if (cancha.Horarios) {
-        horarios = convertToArray(cancha.Horarios).sort((a, b) => {
-            const horaA = a.split(':').map(Number);
-            const horaB = b.split(':').map(Number);
-            return horaA[0] * 60 + horaA[1] - (horaB[0] * 60 + horaB[1]);
-        });
-    } else {
-        console.log('Los horarios aún no están disponibles.');
-    }
+        while (current < endDate) {
+            const next = new Date(current);
+            next.setHours(current.getHours() + 1);
+            intervals.push({
+                start: current.toTimeString().slice(0, 5),
+                end: next.toTimeString().slice(0, 5),
+            });
+            current = next;
+        }
 
-    const [showCorrelativeMessage, setShowCorrelativeMessage] = useState(false);
+        return intervals;
+    };
 
-    const handleTimeSlotClick = (timeSlot) => {
-        const timeSlotMinutes = convertTimeToMinutes(timeSlot);
+    const timeIntervals = generateTimeIntervals(
+        new Date(2023, 0, 1, 9, 0),
+        new Date(2023, 0, 1, 23, 0)
+    );
+
+    const handleTimeSlotClick = (interval) => {
         const isCorrelative = selectedTimeSlots.some((slot) => {
-            const slotMinutes = convertTimeToMinutes(slot);
-            return Math.abs(slotMinutes - timeSlotMinutes) === 60;
+            const slotStart = new Date(`1970-01-01T${slot.start}:00`);
+            const slotEnd = new Date(`1970-01-01T${slot.end}:00`);
+            const intervalStart = new Date(`1970-01-01T${interval.start}:00`);
+            const intervalEnd = new Date(`1970-01-01T${interval.end}:00`);
+            return (
+                slotEnd.getTime() === intervalStart.getTime() ||
+                slotStart.getTime() === intervalEnd.getTime()
+            );
         });
 
         if (
             selectedTimeSlots.length === 1 &&
-            selectedTimeSlots.includes(timeSlot)
+            selectedTimeSlots.some(
+                (slot) =>
+                    slot.start === interval.start && slot.end === interval.end
+            )
         ) {
             setSelectedTimeSlots([]);
+            setSelectedTimesInfo(''); // Limpiar la información de la hora seleccionada cuando se deselecciona
         } else if (selectedTimeSlots.length === 0 || isCorrelative) {
-            setSelectedTimeSlots((prevSelected) =>
-                prevSelected.includes(timeSlot)
-                    ? prevSelected.filter((slot) => slot !== timeSlot)
-                    : [...prevSelected, timeSlot].sort(
-                          (a, b) =>
-                              convertTimeToMinutes(a) - convertTimeToMinutes(b)
-                      )
-            );
+            const newSelectedTimeSlots = selectedTimeSlots.some(
+                (slot) =>
+                    slot.start === interval.start && slot.end === interval.end
+            )
+                ? selectedTimeSlots.filter(
+                      (slot) =>
+                          slot.start !== interval.start ||
+                          slot.end !== interval.end
+                  )
+                : [...selectedTimeSlots, interval].sort(
+                      (a, b) =>
+                          new Date(`1970-01-01T${a.start}:00`) -
+                          new Date(`1970-01-01T${b.start}:00`)
+                  );
+            setSelectedTimeSlots(newSelectedTimeSlots);
             setShowCorrelativeMessage(false);
+
+            // Actualizar la información de la hora seleccionada
+            if (newSelectedTimeSlots.length > 0) {
+                const startTime = newSelectedTimeSlots[0].start;
+                const endTime =
+                    newSelectedTimeSlots[newSelectedTimeSlots.length - 1].end;
+                setSelectedTimesInfo(`Hora seleccionada: ${startTime} - ${endTime}`);
+            } else {
+                setSelectedTimesInfo('');
+            }
         } else {
             // Mostrar mensaje de error o manejar la selección no correlativa.
             console.log('Por favor, seleccione horarios correlativos.');
             setShowCorrelativeMessage(true);
         }
     };
-
-    function convertTimeToMinutes(time) {
-        const [hours, minutes] = time.split(':').map(Number);
-        return hours * 60 + minutes;
-    }
 
     const shareUrl = `http://localhost:3000/${id}`; // Cambiar a la URL real de tu sitio
     const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
@@ -408,7 +441,7 @@ export default function Page() {
                             month={month1}
                             onMonthChange={setMonth1}
                             reservationsByDay={reservationsByDay}
-                            showCorrelativeMessage={showCorrelativeMessage}
+                            isUserAuthenticated={!!user}
                         />
                     </div>
                     <div className="w-full sm:w-1/2">
@@ -417,27 +450,35 @@ export default function Page() {
                         >
                             Horarios disponibles
                         </h6>
+                        {!user && (
+                            <div className="text-red-500 mb-4">
+                                Para ver los horarios disponibles, por favor regístrate e inicia sesión.
+                            </div>
+                        )}
                         <div className="grid grid-cols-3 gap-4">
-                            {horarios && horarios.length > 0 ? (
+                            {timeIntervals && timeIntervals.length > 0 ? (
                                 <>
-                                    {horarios.map((horario) => {
-                                        const isOccupied =
-                                            checkIfTimeSlotIsOccupied(
-                                                horario,
-                                                selectedDay,
-                                                reservationsByDay
-                                            );
+                                    {timeIntervals.map((interval) => {
+                                        const isOccupied = checkIfTimeSlotIsOccupied(
+                                            interval.start,
+                                            selectedDay,
+                                            reservationsByDay
+                                        );
                                         return (
                                             <button
-                                                key={horario}
-                                                disabled={isOccupied} // Deshabilita el botón si el horario está ocupado
-                                                className={`p-2 rounded-lg ${isOccupied ? 'bg-red-500 text-white' : selectedTimeSlots.includes(horario) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
+                                                key={interval.start}
+                                                disabled={isOccupied || !user} // Deshabilita el botón si el horario está ocupado o el usuario no está autenticado
+                                                className={`p-2 rounded-lg ${isOccupied ? 'bg-red-500 text-white' : selectedTimeSlots.some(
+                                                    (slot) =>
+                                                        slot.start === interval.start &&
+                                                        slot.end === interval.end
+                                                ) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
                                                 onClick={() =>
                                                     !isOccupied &&
-                                                    handleTimeSlotClick(horario)
+                                                    handleTimeSlotClick(interval)
                                                 }
                                             >
-                                                {horario}
+                                                {`${interval.start} - ${interval.end}`}
                                             </button>
                                         );
                                     })}
@@ -449,10 +490,14 @@ export default function Page() {
                             )}
                         </div>
                         <div>
+                            {selectedTimesInfo && (
+                                <div className="text-center mt-4 text-green-500">
+                                    {selectedTimesInfo}
+                                </div>
+                            )}
                             {showCorrelativeMessage && (
                                 <div className="text-center mt-4 text-red-500">
-                                    Solo se permite elegir horarios
-                                    correlativos.
+                                    Solo se permite elegir horarios correlativos.
                                 </div>
                             )}
                         </div>
@@ -536,7 +581,7 @@ export default function Page() {
                 canchaDireccion={cancha.Direccion}
                 canchaLocalidad={cancha.Localidad}
                 selectedTimeSlots={selectedTimeSlots}
-                horarios={horarios}
+                horarios={timeIntervals.map(interval => `${interval.start} - ${interval.end}`)}
                 selectedDay={selectedDay}
                 checkIfTimeSlotIsOccupied={checkIfTimeSlotIsOccupied}
                 handleTimeSlotClick={handleTimeSlotClick}
