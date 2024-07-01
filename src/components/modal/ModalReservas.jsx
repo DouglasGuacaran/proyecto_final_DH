@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-
 import { Button } from '@/components/ui/button';
 import Swal from 'sweetalert2';
 import { useTheme } from '@/context/ThemeContext';
+import { useReservas } from '@/context/ReservasProvider';
 
 const ModalReservas = ({
     isOpen,
@@ -14,15 +14,14 @@ const ModalReservas = ({
     canchaCaracteristicas,
     usuarioNombre,
     usuarioTelefono,
-    selectedTimeSlots,
     handleTimeSlotClick,
     checkIfTimeSlotIsOccupied,
     reservationsByDay,
     horarios,
     showCorrelativeMessage,
     selectedDay,
-    closeModal,
 }) => {
+    const { selectedTimeSlots } = useReservas();
     const [nombreContacto, setNombreContacto] = useState(usuarioNombre);
     const [telefonoContacto, setTelefonoContacto] = useState(usuarioTelefono);
     const { theme } = useTheme();
@@ -45,17 +44,13 @@ const ModalReservas = ({
                 cancelButtonText: 'Cancelar',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Aquí definimos fecha_hora_inicio y fecha_hora_fin
                     const [dia, mes, año] = selectedDay.split('-');
                     const fechaFormateada = `${año}-${mes}-${dia}`;
 
-                    const startTime = selectedTimeSlots[0];
-                    const endTime =
-                        selectedTimeSlots[selectedTimeSlots.length - 1];
-                    const endTimePlusOneHour = `${parseInt(endTime.split(':')[0], 10) + 1}:00`;
-
+                    const startTime = selectedTimeSlots[0].split(' - ')[0];
+                    const endTime = selectedTimeSlots[selectedTimeSlots.length - 1].split(' - ')[1];
                     const fecha_hora_inicio = `${fechaFormateada} ${startTime}:00`;
-                    const fecha_hora_fin = `${fechaFormateada} ${endTimePlusOneHour}:00`;
+                    const fecha_hora_fin = `${fechaFormateada} ${endTime}:00`;
 
                     onReserve({
                         startDateTime: fecha_hora_inicio,
@@ -63,23 +58,32 @@ const ModalReservas = ({
                         nombreContacto,
                         telefonoContacto,
                     })
-                        .then(() => {
-                            Swal.fire({
-                                title: '¡Reserva exitosa!',
-                                text: 'Tu reserva se ha realizado correctamente.',
-                                icon: 'success',
-                                confirmButtonText: 'OK',
-                            });
-                            closeModal();
-                        })
-                        .catch(() => {
-                            Swal.fire({
-                                title: 'Error',
-                                text: 'Hubo un problema al realizar la reserva. Inténtalo nuevamente.',
-                                icon: 'error',
-                                confirmButtonText: 'OK',
-                            });
+                    .then(() => {
+                        Swal.fire({
+                            title: '¡Reserva exitosa!',
+                            text: 'Tu reserva se ha realizado correctamente.',
+                            text: 
+                                'Reserva realizada en ' +
+                                canchaName +
+                                ' el ' +
+                                selectedDay +
+                                ' a las ' +
+                                selectedTimeSlots[0] +
+                                'hs.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
                         });
+                        onClose();
+                    })
+                    .catch((error) => {
+                        console.error('Error al realizar la reserva:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al realizar la reserva. Inténtalo nuevamente.',
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                        });
+                    });
                 }
             });
         } else {
@@ -87,16 +91,10 @@ const ModalReservas = ({
         }
     };
 
-    const formatUserName = (nombre) => {
-        return nombre.split(' ')[0];
-    };
-    const handleNombreContactoChange = (e) => {
-        setNombreContacto(e.target.value);
-    };
+    const formatUserName = (nombre) => nombre.split(' ')[0];
 
-    const handleTelefonoContactoChange = (e) => {
-        setTelefonoContacto(e.target.value);
-    };
+    const handleNombreContactoChange = (e) => setNombreContacto(e.target.value);
+    const handleTelefonoContactoChange = (e) => setTelefonoContacto(e.target.value);
 
     if (!isOpen) return null;
 
@@ -177,17 +175,35 @@ const ModalReservas = ({
                         <div className="grid grid-cols-5 gap-4 mb-5 mt-5">
                             {horarios && horarios.length > 0 ? (
                                 horarios.map((horario) => {
-                                    const isOccupied =
-                                        checkIfTimeSlotIsOccupied(
-                                            horario,
-                                            selectedDay,
-                                            reservationsByDay
-                                        );
+                                    const isOccupied = checkIfTimeSlotIsOccupied(
+                                        horario,
+                                        selectedDay,
+                                        reservationsByDay
+                                    );
+                                    const isSelected = selectedTimeSlots && selectedTimeSlots.includes(horario);
+
+                                    const buttonClasses = [
+                                        "p-2",
+                                        "rounded-lg",
+                                        "transition",
+                                        "duration-150",
+                                        "ease-in-out",
+                                        "transform",
+                                        "hover:scale-105",
+                                        "shadow-md",
+                                        "hover:shadow-lg",
+                                        isOccupied
+                                            ? "bg-red-500 text-white cursor-not-allowed"
+                                            : isSelected
+                                            ? "bg-blue-500 text-white hover:bg-blue-600"
+                                            : "bg-gray-300 text-black hover:bg-gray-400",
+                                    ].join(" ");
+
                                     return (
                                         <button
                                             key={horario}
-                                            disabled={isOccupied} // Deshabilita el botón si el horario está ocupado
-                                            className={`p-2 rounded-lg transition duration-150 ease-in-out transform hover:scale-105 ${isOccupied ? 'bg-red-500 text-white cursor-not-allowed' : selectedTimeSlots.includes(horario) ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 text-black hover:bg-gray-400'} shadow-md hover:shadow-lg ${isOccupied ? 'bg-red-500 text-white' : selectedTimeSlots.includes(horario) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
+                                            disabled={isOccupied}
+                                            className={buttonClasses}
                                             onClick={() =>
                                                 !isOccupied &&
                                                 handleTimeSlotClick(horario)

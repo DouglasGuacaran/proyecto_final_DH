@@ -1,3 +1,4 @@
+// components/Page.jsx
 'use client';
 
 import Footer from '@/components/footer/Footer';
@@ -28,14 +29,18 @@ import {
     TwitterIcon,
     WhatsappIcon,
 } from 'react-share';
+import { useReservas } from '@/context/ReservasProvider';
+
+// Page.jsx
 
 export default function Page() {
     const { id } = useParams();
     const [cancha, setCancha] = useState({});
     const { theme } = useTheme();
     const { user } = useAuth();
+    const { selectedTimeSlots, addTimeSlot, removeTimeSlot, clearTimeSlots } = useReservas();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isShareModalOpen, setIsShareModalOpen] = useState(false); // Estado para la visibilidad del modal de compartir
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [usuarioId, setUsuarioId] = useState(null);
     const [usuario, setUsuario] = useState(null);
     const { supabase } = useUsuarios();
@@ -43,16 +48,14 @@ export default function Page() {
     const today = new Date();
     const [month1, setMonth1] = useState(today);
     const [selectedDay, setSelectedDay] = useState(null);
-    const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
-    const [selectedTimesInfo, setSelectedTimesInfo] = useState(''); // Nuevo estado para la información de la hora seleccionada
-    const [showCorrelativeMessage, setShowCorrelativeMessage] = useState(false); // Añadir el estado showCorrelativeMessage
+    const [selectedTimesInfo, setSelectedTimesInfo] = useState('');
+    const [showCorrelativeMessage, setShowCorrelativeMessage] = useState(false);
 
     useEffect(() => {
         const fetchUsuarioId = async () => {
             const supabase = createClient();
             const { data: user, error: userError } =
                 await supabase.auth.getUser();
-            // console.log("Authenticated user:", user);
 
             if (userError) {
                 console.error('Error fetching authenticated user:', userError);
@@ -71,7 +74,6 @@ export default function Page() {
                 } else {
                     setUsuarioId(data.id);
                     setUsuario(data);
-                    // console.log("Fetched usuario ID:", data.id);
                 }
             } else {
                 console.error('User data is not in expected format:', user);
@@ -80,6 +82,7 @@ export default function Page() {
 
         fetchUsuarioId();
     }, []);
+
     useEffect(() => {
         const getCanchaWithId = async (id) => {
             const supabase = createClient();
@@ -151,22 +154,20 @@ export default function Page() {
     function handleSelectedDayChange(selectedDay) {
         const formattedDay = formatDay(selectedDay);
         setSelectedDay(formattedDay);
-        setSelectedTimeSlots([]);
-        setSelectedTimesInfo(''); // Limpiar la información de la hora seleccionada cuando se cambia el día
+        clearTimeSlots();
+        setSelectedTimesInfo('');
     }
 
     const formatDay = (date) => {
         if (!(date instanceof Date) || date === null) {
-            console.error(
-                'formatDay fue llamado con un argumento no válido:',
-                date
-            );
+            console.error('formatDay fue llamado con un argumento no válido:', date);
             return 'Fecha no válida';
         }
 
         const pad = (num) => (num < 10 ? `0${num}` : num);
         return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`;
     };
+
     const getReservationsByDay = (reservations) => {
         const pad = (num) => (num < 10 ? `0${num}` : num);
         const reservationsByDay = {};
@@ -194,9 +195,11 @@ export default function Page() {
         reservationsByDay
     ) => {
         if (!selectedDay || !reservationsByDay[selectedDay]) return false;
+        const [intervalStart, intervalEnd] = horario.split(' - ');
         return reservationsByDay[selectedDay].some(
             (reservation) =>
-                horario >= reservation.start && horario < reservation.end
+                (intervalStart >= reservation.start && intervalStart < reservation.end) ||
+                (intervalEnd > reservation.start && intervalEnd <= reservation.end)
         );
     };
 
@@ -220,7 +223,19 @@ export default function Page() {
         arrows: false,
     };
 
-    const handleModalOpen = () => setIsModalOpen(true);
+    const handleModalOpen = () => {
+        if (!selectedDay) {
+            Swal.fire({
+                title: 'Selecciona un día',
+                text: 'Por favor, selecciona un día antes de realizar una reserva.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+            });
+            return;
+        }
+        setIsModalOpen(true);
+    };
+
     const handleModalClose = () => setIsModalOpen(false);
 
     const handleReserve = async ({
@@ -249,88 +264,59 @@ export default function Page() {
             console.error('Error creating reservation:', error);
         } else {
             console.log('Reservation created:', data);
+
+            const { data: updatedReservations, error: fetchError } = await supabase
+                .from('Reserva')
+                .select('*')
+                .eq('Cancha_id', cancha.id);
+
+            if (fetchError) {
+                console.error('Error fetching updated reservations:', fetchError);
+            } else {
+                setReservas(updatedReservations);
+            }
+
+            setIsModalOpen(false);
         }
     };
-
-    const generateTimeIntervals = (start, end) => {
-        const intervals = [];
-        let current = new Date(start);
-        const endDate = new Date(end);
-
-        while (current < endDate) {
-            const next = new Date(current);
-            next.setHours(current.getHours() + 1);
-            intervals.push({
-                start: current.toTimeString().slice(0, 5),
-                end: next.toTimeString().slice(0, 5),
-            });
-            current = next;
-        }
-
-        return intervals;
-    };
-
-    const timeIntervals = generateTimeIntervals(
-        new Date(2023, 0, 1, 9, 0),
-        new Date(2023, 0, 1, 23, 0)
-    );
 
     const handleTimeSlotClick = (interval) => {
+        const [intervalStart, intervalEnd] = interval.split(' - ');
         const isCorrelative = selectedTimeSlots.some((slot) => {
-            const slotStart = new Date(`1970-01-01T${slot.start}:00`);
-            const slotEnd = new Date(`1970-01-01T${slot.end}:00`);
-            const intervalStart = new Date(`1970-01-01T${interval.start}:00`);
-            const intervalEnd = new Date(`1970-01-01T${interval.end}:00`);
-            return (
-                slotEnd.getTime() === intervalStart.getTime() ||
-                slotStart.getTime() === intervalEnd.getTime()
-            );
+            const [slotStart, slotEnd] = slot.split(' - ');
+            return slotEnd === intervalStart || slotStart === intervalEnd;
         });
 
         if (
             selectedTimeSlots.length === 1 &&
-            selectedTimeSlots.some(
-                (slot) =>
-                    slot.start === interval.start && slot.end === interval.end
-            )
+            selectedTimeSlots.some((slot) => slot === interval)
         ) {
-            setSelectedTimeSlots([]);
+            removeTimeSlot(interval);
             setSelectedTimesInfo(''); // Limpiar la información de la hora seleccionada cuando se deselecciona
         } else if (selectedTimeSlots.length === 0 || isCorrelative) {
-            const newSelectedTimeSlots = selectedTimeSlots.some(
-                (slot) =>
-                    slot.start === interval.start && slot.end === interval.end
-            )
-                ? selectedTimeSlots.filter(
-                      (slot) =>
-                          slot.start !== interval.start ||
-                          slot.end !== interval.end
-                  )
-                : [...selectedTimeSlots, interval].sort(
-                      (a, b) =>
-                          new Date(`1970-01-01T${a.start}:00`) -
-                          new Date(`1970-01-01T${b.start}:00`)
+            const newSelectedTimeSlots = selectedTimeSlots.some((slot) => slot === interval)
+                ? selectedTimeSlots.filter((slot) => slot !== interval)
+                : [...selectedTimeSlots, interval].sort((a, b) =>
+                      a.split(' - ')[0].localeCompare(b.split(' - ')[0])
                   );
-            setSelectedTimeSlots(newSelectedTimeSlots);
+            addTimeSlot(interval);
             setShowCorrelativeMessage(false);
 
             // Actualizar la información de la hora seleccionada
             if (newSelectedTimeSlots.length > 0) {
-                const startTime = newSelectedTimeSlots[0].start;
-                const endTime =
-                    newSelectedTimeSlots[newSelectedTimeSlots.length - 1].end;
+                const startTime = newSelectedTimeSlots[0].split(' - ')[0];
+                const endTime = newSelectedTimeSlots[newSelectedTimeSlots.length - 1].split(' - ')[1];
                 setSelectedTimesInfo(`Hora seleccionada: ${startTime} - ${endTime}`);
             } else {
                 setSelectedTimesInfo('');
             }
         } else {
-            // Mostrar mensaje de error o manejar la selección no correlativa.
             console.log('Por favor, seleccione horarios correlativos.');
             setShowCorrelativeMessage(true);
         }
     };
 
-    const shareUrl = `http://localhost:3000/${id}`; // Cambiar a la URL real de tu sitio
+    const shareUrl = `http://localhost:3000/${id}`;
     const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
 
     const handleShareModalOpen = () => setIsShareModalOpen(true);
@@ -350,6 +336,29 @@ export default function Page() {
             setCaracteristicasCancha(convertToArray(Caracteristicas));
         }
     }, [Caracteristicas]);
+
+    const generateTimeIntervals = (start, end) => {
+        const intervals = [];
+        let current = new Date(start);
+        const endDate = new Date(end);
+
+        while (current < endDate) {
+            const next = new Date(current);
+            next.setHours(current.getHours() + 1);
+            intervals.push({
+                start: current.toTimeString().slice(0, 5),
+                end: next.toTimeString().slice(0, 5),
+            });
+            current = next;
+        }
+
+        return intervals.map(interval => `${interval.start} - ${interval.end}`);
+    };
+
+    const timeIntervals = generateTimeIntervals(
+        new Date(2023, 0, 1, 9, 0),
+        new Date(2023, 0, 1, 23, 0)
+    );
 
     return (
         <>
@@ -460,25 +469,24 @@ export default function Page() {
                                 <>
                                     {timeIntervals.map((interval) => {
                                         const isOccupied = checkIfTimeSlotIsOccupied(
-                                            interval.start,
+                                            interval,
                                             selectedDay,
                                             reservationsByDay
                                         );
                                         return (
                                             <button
-                                                key={interval.start}
-                                                disabled={isOccupied || !user} // Deshabilita el botón si el horario está ocupado o el usuario no está autenticado
+                                                key={interval}
+                                                disabled={isOccupied || !user}
                                                 className={`p-2 rounded-lg ${isOccupied ? 'bg-red-500 text-white' : selectedTimeSlots.some(
                                                     (slot) =>
-                                                        slot.start === interval.start &&
-                                                        slot.end === interval.end
+                                                        slot === interval
                                                 ) ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
                                                 onClick={() =>
                                                     !isOccupied &&
                                                     handleTimeSlotClick(interval)
                                                 }
                                             >
-                                                {`${interval.start} - ${interval.end}`}
+                                                {interval}
                                             </button>
                                         );
                                     })}
@@ -552,7 +560,6 @@ export default function Page() {
                                 ))}
                         </tbody>
                     </table>
-
                     <ul
                         className={`mb-6 font-normal ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}
                     >
@@ -565,7 +572,7 @@ export default function Page() {
                     </ul>
 
                     {user && ( // Mostrar el botón de Reservar solo si el usuario está logueado
-                        <Button className="w-full" onClick={handleModalOpen}>
+                        <Button className="w-full" onClick={handleModalOpen} disabled={!selectedDay}>
                             Reservar
                         </Button>
                     )}
@@ -580,8 +587,6 @@ export default function Page() {
                 canchaName={Nombre}
                 canchaDireccion={cancha.Direccion}
                 canchaLocalidad={cancha.Localidad}
-                selectedTimeSlots={selectedTimeSlots}
-                horarios={timeIntervals.map(interval => `${interval.start} - ${interval.end}`)}
                 selectedDay={selectedDay}
                 checkIfTimeSlotIsOccupied={checkIfTimeSlotIsOccupied}
                 handleTimeSlotClick={handleTimeSlotClick}
@@ -589,8 +594,9 @@ export default function Page() {
                 usuarioNombre={usuario?.Nombre || ''}
                 usuarioTelefono={usuario?.Telefono || ''}
                 canchaCaracteristicas={caracteristicasCancha}
+                horarios={timeIntervals}
                 existingReservations={reservas}
-                closeModal={handleModalClose}
+                showCorrelativeMessage={showCorrelativeMessage}
             >
                 <h2 className="text-2xl font-bold mb-4 text-center">
                     Reserva en {Nombre}
@@ -647,3 +653,4 @@ export default function Page() {
         </>
     );
 }
+
