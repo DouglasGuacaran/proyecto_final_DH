@@ -65,7 +65,7 @@ const Card = ({ dataCancha }) => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   };
 
-  const shareUrl = `http://localhost:3000/${id}`; // Cambiar a la URL real de tu sitio
+  const shareUrl = `http://entretiempo.vercel.app/${id}`; // Cambiar a la URL real de tu sitio
   const shareTitle = `Reserva la cancha ${Nombre} por $${Precio_hora}`;
 
   return (
