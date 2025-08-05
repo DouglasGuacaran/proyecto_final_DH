@@ -122,7 +122,7 @@ export default function Search({ onSearch }) {
     return times;
   };
 
-  const timeSlots = generateTimeSlots("08:00", "23:00");
+  const timeSlots = generateTimeSlots("09:00", "23:00");
 
   const isPastDate = (date) => {
     const today = new Date();
